@@ -2,7 +2,7 @@
 name = "sqlorm"
 version = "0.1.0"
 edition = "2024"
-authors = ["Your Name <lev@lavryniuk.com>"]
+authors = ["Lev Lavryniuk <lev@lavryniuk.com>"]
 description = "A developer-friendly, type-safe ORM for Rust built on top of SQLx, with compile-time checked queries, automatic CRUD, and relationship helpers."
 license = "MIT"
 repository = "https://github.com/levlavryniuk/sqlorm"
@@ -12,19 +12,25 @@ readme = "README.md"
 keywords = ["orm", "sqlx", "database", "rust", "postgres"]
 categories = ["database", "development-tools", "web-programming"]
 
+[workspace.lints.rust]
+rust-2018-idioms = "warn"
+missing_debug_implementations = "warn"
+elided_lifetimes_in_paths = "allow"
+
+[workspace]
+members = ["src/sqlorm-core", "src/sqlorm-macros"]
+[workspace.dependencies]
+sqlorm-core = { path = "src/sqlorm-core" }
+
 [dependencies]
-sqlx = { version = "0.7", features = [
+sqlx = { version = "0.8", features = [
   "runtime-tokio",
   "macros",
   "postgres",
   "chrono",
 ] }
+sqlorm-macros = { path = "src/sqlorm-macros" }
 tokio = { version = "1.40", features = ["full"] }
 chrono = { version = "0.4", features = ["serde"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-
-# For procedural macros
-syn = { version = "2.0", features = ["full"] }
-quote = "1.0"
-proc-macro2 = "1.0"
