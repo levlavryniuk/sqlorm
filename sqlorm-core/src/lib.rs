@@ -1,6 +1,5 @@
 pub mod qb;
 use sqlx::FromRow;
-use sqlx::postgres::PgRow;
 
 pub use crate::qb::TableInfo;
 pub use async_trait::async_trait;
@@ -17,30 +16,31 @@ pub trait Table {
 }
 
 pub trait FromAliasedRow {
-    fn from_aliased_row(row: &PgRow) -> sqlx::Result<Self>
+    fn from_aliased_row(row: &Row) -> sqlx::Result<Self>
     where
         Self: Sized + Default;
 }
+pub use driver::{Connection, Driver, Pool, Row};
 
 #[async_trait]
 pub trait Executor<T> {
-    async fn fetch_one_as(self, pool: &sqlx::PgPool) -> sqlx::Result<T>;
-    async fn fetch_all_as(self, pool: &sqlx::PgPool) -> sqlx::Result<Vec<T>>;
+    async fn fetch_one_as(self, pool: &Pool) -> sqlx::Result<T>;
+    async fn fetch_all_as(self, pool: &Pool) -> sqlx::Result<Vec<T>>;
 }
 
 #[async_trait]
 impl<T> Executor<T> for QB<T>
 where
-    T: for<'r> FromRow<'r, sqlx::postgres::PgRow> + Send + Unpin + std::fmt::Debug,
+    T: for<'r> FromRow<'r, Row> + Send + Unpin + std::fmt::Debug,
 {
-    async fn fetch_one_as(mut self, pool: &sqlx::PgPool) -> sqlx::Result<T> {
+    async fn fetch_one_as(mut self, pool: &Pool) -> sqlx::Result<T> {
         self.eager.clear();
         self.batch.clear();
         let row = self.build_query().build().fetch_one(pool).await?;
         T::from_row(&row)
     }
 
-    async fn fetch_all_as(self, pool: &sqlx::PgPool) -> sqlx::Result<Vec<T>> {
+    async fn fetch_all_as(self, pool: &Pool) -> sqlx::Result<Vec<T>> {
         let rows = self.build_query().build().fetch_all(pool).await?;
         rows.iter().map(T::from_row).collect()
     }
@@ -66,29 +66,56 @@ pub mod driver {
     );
 
     #[cfg(all(feature = "postgres", not(any(feature = "mysql", feature = "sqlite"))))]
-    /// Atmosphere Database Driver
+    /// Sqlorm Database Driver
     pub type Driver = sqlx::Postgres;
 
     #[cfg(all(feature = "postgres", not(any(feature = "mysql", feature = "sqlite"))))]
-    /// Atmosphere Database Pool
+    /// Sqlorm Database Pool
     pub type Pool = sqlx::PgPool;
 
+    #[cfg(all(feature = "postgres", not(any(feature = "mysql", feature = "sqlite"))))]
+    /// Sqlorm Database Connection
+    pub type Connection = sqlx::PgConnection;
+
+    #[cfg(all(feature = "postgres", not(any(feature = "mysql", feature = "sqlite"))))]
+    /// Sqlorm Database Row
+    pub type Row = sqlx::postgres::PgRow;
+
     #[cfg(all(feature = "mysql", not(any(feature = "postgres", feature = "sqlite"))))]
-    /// Atmosphere Database Driver
+    /// Sqlorm Database Driver
     pub type Driver = sqlx::MySql;
 
     #[cfg(all(feature = "mysql", not(any(feature = "postgres", feature = "sqlite"))))]
-    /// Atmosphere Database Pool
+    /// Sqlorm Database Pool
     pub type Pool = sqlx::MySqlPool;
 
+    #[cfg(all(feature = "mysql", not(any(feature = "postgres", feature = "sqlite"))))]
+    /// Sqlorm Database Connection
+    pub type Connection = sqlx::MySqlConnection;
+
+    #[cfg(all(feature = "mysql", not(any(feature = "postgres", feature = "sqlite"))))]
+    /// Sqlorm Database Row
+    pub type Row = sqlx::mysql::MySqlRow;
+
     #[cfg(all(feature = "sqlite", not(any(feature = "postgres", feature = "mysql"))))]
-    /// Atmosphere Database Driver
+    /// Sqlorm Database Driver
     pub type Driver = sqlx::Sqlite;
 
     #[cfg(all(feature = "sqlite", not(any(feature = "postgres", feature = "mysql"))))]
-    /// Atmosphere Database Pool
+    /// Sqlorm Database Pool
     pub type Pool = sqlx::SqlitePool;
+
+    #[cfg(all(feature = "sqlite", not(any(feature = "postgres", feature = "mysql"))))]
+    /// Sqlorm Database Connection
+    pub type Connection = sqlx::SqliteConnection;
+
+    #[cfg(all(feature = "sqlite", not(any(feature = "postgres", feature = "mysql"))))]
+    /// Sqlorm Database Row
+    pub type Row = sqlx::sqlite::SqliteRow;
 }
+
+// Re-export driver types for use in macros
+pub use driver::*;
 
 #[doc(hidden)]
 pub use sqlx;

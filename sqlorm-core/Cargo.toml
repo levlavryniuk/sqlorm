@@ -16,3 +16,6 @@ runtime-tokio-rustls = ["sqlx/runtime-tokio-rustls"]
 mysql = ["sqlx/mysql"]
 postgres = ["sqlx/postgres"]
 sqlite = ["sqlx/sqlite"]
+
+[package.metadata.docs.rs]
+features = ["postgres"]

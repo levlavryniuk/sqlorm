@@ -1,5 +1,6 @@
+use crate::driver::Driver;
 use crate::qb::BindValue;
-use sqlx::{Postgres, QueryBuilder};
+use sqlx::QueryBuilder;
 
 /// Represents a SQL condition fragment with its associated bound values.
 ///
@@ -25,14 +26,14 @@ pub struct Condition {
 /// (`Box<dyn AnyValue>`).
 pub trait AnyValue: Send + Sync {
     /// Bind this value into the given [`QueryBuilder`].
-    fn bind(&self, builder: &mut QueryBuilder<'static, Postgres>);
+    fn bind(&self, builder: &mut QueryBuilder<'static, Driver>);
 }
 
 impl<T> AnyValue for T
 where
     T: BindValue + Clone + std::fmt::Debug + 'static,
 {
-    fn bind(&self, builder: &mut QueryBuilder<'static, Postgres>) {
+    fn bind(&self, builder: &mut QueryBuilder<'static, Driver>) {
         eprintln!("[AnyValue::bind] binding value {:?}", self);
         builder.push_bind(self.clone());
     }

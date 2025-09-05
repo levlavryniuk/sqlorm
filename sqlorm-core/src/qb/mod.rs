@@ -7,9 +7,8 @@ pub use bind::BindValue;
 pub use column::Column;
 pub use condition::Condition;
 use sqlx::FromRow;
-use sqlx::Postgres;
 use sqlx::QueryBuilder;
-use sqlx::postgres::PgRow;
+use crate::driver::{Driver, Row};
 
 fn with_quotes(s: &str) -> String {
     format!("\"{}\"", s)
@@ -67,7 +66,7 @@ impl<T: std::fmt::Debug> QB<T> {
         self
     }
 
-    pub fn select<'a, Out: Debug + FromRow<'a, PgRow>>(
+    pub fn select<'a, Out: Debug + FromRow<'a, Row>>(
         mut self,
         cols: Vec<&'static str>,
     ) -> QB<Out> {
@@ -143,7 +142,7 @@ impl<T: std::fmt::Debug> QB<T> {
         joins
     }
 
-    pub fn build_query(&self) -> QueryBuilder<'static, Postgres> {
+    pub fn build_query(&self) -> QueryBuilder<'static, Driver> {
         let projections = self.build_projections().join(", ");
         let from_clause = self.build_from_clause();
         let joins = self.build_joins();

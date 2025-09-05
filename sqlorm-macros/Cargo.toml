@@ -9,9 +9,9 @@ proc-macro = true
 
 [features]
 default = []
-mysql = ["atmosphere-core/mysql"]
-postgres = ["atmosphere-core/postgres"]
-sqlite = ["atmosphere-core/sqlite"]
+mysql = ["sqlorm-macros/mysql"]
+postgres = ["sqlorm-macros/postgres"]
+sqlite = ["sqlorm-macros/sqlite"]
 
 [dependencies]
 sqlorm-core.workspace = true
@@ -23,10 +23,3 @@ syn = { version = "2.0.39", default-features = false, features = [
   "extra-traits",
 ] }
 quote = { version = "1.0.14", default-features = false }
-
-[workspace.lints.clippy]
-expect_used = "warn"
-pedantic = { level = "warn", priority = -1 }
-undocumented_unsafe_blocks = "deny"
-unwrap_used = "warn"
-wildcard_imports = "warn"
