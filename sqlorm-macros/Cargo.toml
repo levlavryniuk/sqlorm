@@ -1,0 +1,32 @@
+[package]
+name = "sqlorm-macros"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+proc-macro = true
+
+
+[features]
+default = []
+mysql = ["atmosphere-core/mysql"]
+postgres = ["atmosphere-core/postgres"]
+sqlite = ["atmosphere-core/sqlite"]
+
+[dependencies]
+sqlorm-core.workspace = true
+sqlx.workspace = true
+proc-macro2 = { version = "1.0.36", default-features = false }
+syn = { version = "2.0.39", default-features = false, features = [
+  "parsing",
+  "proc-macro",
+  "extra-traits",
+] }
+quote = { version = "1.0.14", default-features = false }
+
+[workspace.lints.clippy]
+expect_used = "warn"
+pedantic = { level = "warn", priority = -1 }
+undocumented_unsafe_blocks = "deny"
+unwrap_used = "warn"
+wildcard_imports = "warn"
