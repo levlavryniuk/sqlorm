@@ -4,7 +4,14 @@ version = "0.1.0"
 edition = "2024"
 
 [workspace]
-members = ["sqlorm-core", "sqlorm-macros"]
+members = [
+    "sqlorm-core", 
+    "sqlorm-macros", 
+    "examples/common/entities",
+    "examples/common/migrations-helper", 
+    "examples/postgres", 
+    "examples/sqlite"
+]
 
 [workspace.dependencies]
 sqlorm-core = { path = "sqlorm-core" }

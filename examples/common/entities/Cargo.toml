@@ -1,0 +1,16 @@
+[package]
+name = "entities"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+sqlorm = { path = "../../../", features = [] }
+sqlx = { version = "0.8", features = ["chrono", "uuid"] }
+chrono = { version = "0.4", features = ["serde"] }
+serde = { version = "1.0", features = ["derive"] }
+uuid = { version = "1.0", features = ["v4", "serde"] }
+
+[features]
+default = []
+postgres = ["sqlorm/postgres", "sqlx/postgres"]
+sqlite = ["sqlorm/sqlite", "sqlx/sqlite"]

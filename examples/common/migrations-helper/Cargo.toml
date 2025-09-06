@@ -1,0 +1,13 @@
+[package]
+name = "migrations-helper"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+sqlx = { version = "0.8", features = ["migrate"] }
+sqlorm-core = { path = "../../../sqlorm-core", features = [] }
+
+[features]
+default = []
+postgres = ["sqlx/postgres", "sqlorm-core/postgres"]
+sqlite = ["sqlx/sqlite", "sqlorm-core/sqlite"]
