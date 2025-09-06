@@ -13,40 +13,68 @@ use crate::{
     sql,
 };
 
+/// Represents a single field in an entity struct during macro processing.
+/// 
+/// Contains all the metadata needed to generate appropriate SQL methods and
+/// query builder integration for the field.
 #[derive(Debug, Clone)]
 pub struct EntityField {
-    /// id as in user.id
+    /// The Rust identifier name (e.g., `id`, `email`, `created_at`)
     pub ident: Ident,
-    /// Uuid as in user.id
+    /// The Rust type of the field (e.g., `i64`, `String`, `DateTime<Utc>`)
     pub ty: Type,
-    /// PrimaryKey as in user.id
+    /// The semantic kind of field (primary key, timestamp, regular, etc.)
     pub kind: FieldKind,
-    /// HasMany and stuff as in user.id
+    /// Associated relationships if any (has_many, belongs_to, etc.)
     pub relations: Option<Vec<relations::Relation>>,
-    // id as in sql user.id
-    // pub col: String,
-}
-#[derive(Debug, Clone)]
-pub enum FieldKind {
-    PrimaryKey,
-    Timestamp(TimestampKind),
-    Ignored,
-    Regular { unique: bool },
 }
 
+/// Categorizes the semantic meaning of an entity field for code generation.
+/// 
+/// This determines what kind of special handling the field receives in generated methods.
+#[derive(Debug, Clone)]
+pub enum FieldKind {
+    /// Primary key field marked with `#[sql(pk)]`
+    PrimaryKey,
+    /// Timestamp field with automatic management
+    Timestamp(TimestampKind),
+    /// Field excluded from SQL operations via `#[sqlx(skip)]`
+    Ignored,
+    /// Regular database field
+    Regular { 
+        /// Whether the field is unique (generates `find_by_*` methods)
+        unique: bool 
+    },
+}
+
+/// Specifies the type of automatic timestamp management.
+/// 
+/// Used with `#[sql(timestamp = "...")]` attributes.
 #[derive(Debug, Clone)]
 pub enum TimestampKind {
+    /// Field marked with `#[sql(timestamp = "created_at")]` - set on insert
     Created,
+    /// Field marked with `#[sql(timestamp = "updated_at")]` - set on insert/update
     Updated,
+    /// Field marked with `#[sql(timestamp = "deleted_at")]` - for soft deletes
     Deleted,
 }
 
+/// Complete representation of an entity struct during macro processing.
+/// 
+/// Contains all information needed to generate the full set of database methods,
+/// query builder integration, and relationship handling.
 #[derive(Debug)]
 pub struct EntityStruct {
+    /// The name of the Rust struct
     pub struct_ident: Ident,
+    /// The database table name (from `#[table_name]` or struct name + "s")
     pub table_name: String,
+    /// All fields in the struct
     pub fields: Vec<EntityField>,
+    /// The primary key field (exactly one required)
     pub pk: EntityField,
+    /// All relationships defined on this entity
     pub relations: Vec<relations::Relation>,
 }
 
@@ -155,10 +183,14 @@ pub fn handle(es: EntityStruct) -> TokenStream {
 }
 
 impl EntityField {
+    /// Returns true if this field is the primary key.
     pub fn is_pk(&self) -> bool {
         matches!(self.kind, FieldKind::PrimaryKey)
     }
 
+    /// Returns true if this field is unique (either primary key or marked as unique).
+    /// 
+    /// Unique fields generate `find_by_*` methods.
     pub fn is_unique(&self) -> bool {
         match self.kind {
             FieldKind::PrimaryKey => true,
@@ -167,6 +199,10 @@ impl EntityField {
         }
     }
 
+    /// Returns true if this field should be ignored in SQL operations.
+    /// 
+    /// Ignored fields are typically used for computed properties or relationships
+    /// that are loaded separately.
     pub fn is_ignored(&self) -> bool {
         matches!(self.kind, FieldKind::Ignored)
     }
