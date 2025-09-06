@@ -1,4 +1,4 @@
-use crate::driver::Driver;
+use crate::Driver;
 use std::fmt::Debug;
 
 pub trait BindValue:

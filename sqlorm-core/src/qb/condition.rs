@@ -1,4 +1,4 @@
-use crate::driver::Driver;
+use crate::Driver;
 use crate::qb::BindValue;
 use sqlx::QueryBuilder;
 
@@ -34,7 +34,6 @@ where
     T: BindValue + Clone + std::fmt::Debug + 'static,
 {
     fn bind(&self, builder: &mut QueryBuilder<'static, Driver>) {
-        eprintln!("[AnyValue::bind] binding value {:?}", self);
         builder.push_bind(self.clone());
     }
 }
@@ -52,7 +51,6 @@ impl Condition {
     /// assert_eq!(cond.values.len(), 1);
     /// ```
     pub fn new<T: BindValue + Clone + 'static>(sql: String, val: T) -> Self {
-        eprintln!("[Condition::new] sql='{}', val={:?}", sql, &val);
         Self {
             sql,
             values: vec![Box::new(val)],
@@ -73,11 +71,6 @@ impl Condition {
     /// assert_eq!(cond.values.len(), 3);
     /// ```
     pub fn multi<T: BindValue + Clone + 'static>(sql: String, vals: Vec<T>) -> Self {
-        eprintln!(
-            "[Condition::multi] sql='{}', vals={:?}",
-            sql,
-            vals.iter().collect::<Vec<_>>()
-        );
         Self {
             sql,
             values: vals
@@ -100,7 +93,6 @@ impl Condition {
     /// assert!(cond.values.is_empty());
     /// ```
     pub fn none(sql: String) -> Self {
-        eprintln!("[Condition::none] sql='{}'", sql);
         Self {
             sql,
             values: vec![],

@@ -3,12 +3,12 @@ mod column;
 pub mod condition;
 use std::fmt::Debug;
 
+use crate::{Driver, Row};
 pub use bind::BindValue;
 pub use column::Column;
 pub use condition::Condition;
 use sqlx::FromRow;
 use sqlx::QueryBuilder;
-use crate::driver::{Driver, Row};
 
 fn with_quotes(s: &str) -> String {
     format!("\"{}\"", s)
@@ -66,10 +66,7 @@ impl<T: std::fmt::Debug> QB<T> {
         self
     }
 
-    pub fn select<'a, Out: Debug + FromRow<'a, Row>>(
-        mut self,
-        cols: Vec<&'static str>,
-    ) -> QB<Out> {
+    pub fn select<'a, Out: Debug + FromRow<'a, Row>>(mut self, cols: Vec<&'static str>) -> QB<Out> {
         self.base.columns = cols;
         QB {
             base: self.base,
