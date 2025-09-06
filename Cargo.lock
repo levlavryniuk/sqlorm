@@ -1723,6 +1723,7 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "sqlorm-core",
+ "sqlorm-macros",
  "sqlx",
 ]
 
@@ -1732,6 +1733,17 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "sqlx",
+]
+
+[[package]]
+name = "sqlorm-macros"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "sqlorm-core",
+ "sqlx",
+ "syn",
 ]
 
 [[package]]

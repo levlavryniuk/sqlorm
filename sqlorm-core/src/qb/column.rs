@@ -10,12 +10,10 @@ use std::marker::PhantomData;
 /// This allows you to write type-safe query conditions such as:
 ///
 /// ```ignore
-/// use crate::qb::{Column, Condition};
+/// use sqlorm_core::qb::{Column, Condition};
+/// use std::marker::PhantomData;
 ///
-/// // Define a column
 /// static ID: Column<i32> = Column { name: "id", table_alias: "user__", _marker: PhantomData };
-///
-/// // Build a condition
 /// let cond: Condition = ID.eq(42);
 /// assert_eq!(cond.sql, "user__.id = ?");
 /// ```

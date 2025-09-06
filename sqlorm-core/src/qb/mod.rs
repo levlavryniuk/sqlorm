@@ -3,46 +3,65 @@ mod column;
 pub mod condition;
 use std::fmt::Debug;
 
-use crate::{Driver, Row};
+#[cfg(any(feature = "postgres", feature = "sqlite"))]
+use crate::driver::{Driver, Row};
 pub use bind::BindValue;
 pub use column::Column;
 pub use condition::Condition;
 use sqlx::FromRow;
 use sqlx::QueryBuilder;
 
+/// Quote identifiers appropriately for the target database
+/// Both PostgreSQL and SQLite support double quotes for identifiers
 fn with_quotes(s: &str) -> String {
+    // Double quotes work for both PostgreSQL and SQLite
+    // This ensures consistent behavior across databases
     format!("\"{}\"", s)
 }
 
 #[derive(Debug)]
+/// Query builder for composing SELECT statements with optional joins and filters.
 pub struct QB<T: std::fmt::Debug> {
+    /// Base table information and selected columns.
     pub base: TableInfo,
-    pub eager: Vec<JoinSpec>, // BelongsTo, HasOne
-    pub batch: Vec<JoinSpec>, // HasMany
+    /// Eager joins that project columns from related tables.
+    pub eager: Vec<JoinSpec>,
+    /// Batch joins for has-many relations.
+    pub batch: Vec<JoinSpec>,
+    /// WHERE clause conditions combined with AND.
     pub filters: Vec<Condition>,
     _marker: std::marker::PhantomData<T>,
 }
 
 #[derive(Clone, Debug)]
+/// Static information about a table used to build queries.
 pub struct TableInfo {
+    /// Database table name.
     pub name: &'static str,
+    /// SQL alias to use for the table in the query.
     pub alias: String,
+    /// Columns to project for this table.
     pub columns: Vec<&'static str>,
 }
 
 #[derive(Clone, Debug)]
+/// Join type for related tables.
 pub enum JoinType {
     Inner,
     Left,
 }
 
 #[derive(Clone, Debug)]
+/// Specification for joining a related table.
 pub struct JoinSpec {
+    /// The join type.
     pub join_type: JoinType,
-    pub relation_name: &'static str, // "jars"
-    pub foreign_table: TableInfo,    // jars table
-    /// ("id" from user, "owner_id" from jar)
-    pub on: (&'static str, &'static str), // ("id", "owner_id")
+    /// Relation name.
+    pub relation_name: &'static str,
+    /// The joined table metadata.
+    pub foreign_table: TableInfo,
+    /// Join key mapping as (base_pk, foreign_fk).
+    pub on: (&'static str, &'static str),
 }
 
 impl<T: std::fmt::Debug> QB<T> {
@@ -159,19 +178,12 @@ impl<T: std::fmt::Debug> QB<T> {
                     builder.push(" AND ");
                 }
 
-                eprintln!(
-                    "[QB::build_query] processing condition: sql='{}', values_len={}",
-                    cond.sql,
-                    cond.values.len()
-                );
-
                 let mut parts = cond.sql.split('?');
                 if let Some(first) = parts.next() {
                     builder.push(first);
                 }
 
                 for (val, part) in cond.values.iter().zip(parts) {
-                    eprintln!("[QB::build_query] binding one value for '{}'", cond.sql);
                     val.bind(&mut builder);
                     builder.push(part);
                 }

@@ -8,6 +8,7 @@ pub use qb::Condition;
 pub use qb::*;
 mod traits;
 
+#[cfg(any(feature = "postgres", feature = "sqlite"))]
 pub use driver::{Connection, Driver, Pool, Row};
 
 pub use traits::Executor;
@@ -42,66 +43,43 @@ macro_rules! debug_q {
 }
 
 pub mod driver {
-    #[cfg(any(
-        all(feature = "postgres", any(feature = "mysql", feature = "sqlite")),
-        all(feature = "mysql", any(feature = "postgres", feature = "sqlite")),
-        all(feature = "sqlite", any(feature = "postgres", feature = "mysql")),
-    ))]
+    #[cfg(all(feature = "postgres", feature = "sqlite"))]
     compile_error!(
-        "only one database driver can be set – please use multiple binaries using different sqlorm features if you need more than one database"
+        "only one database driver can be set – please enable either 'postgres' or 'sqlite' feature, not both"
     );
 
-    #[cfg(all(feature = "postgres", not(any(feature = "mysql", feature = "sqlite"))))]
+    #[cfg(feature = "postgres")]
     /// Sqlorm Database Driver
     pub type Driver = sqlx::Postgres;
 
-    #[cfg(all(feature = "postgres", not(any(feature = "mysql", feature = "sqlite"))))]
+    #[cfg(feature = "postgres")]
     /// Sqlorm Database Pool
     pub type Pool = sqlx::PgPool;
 
-    #[cfg(all(feature = "postgres", not(any(feature = "mysql", feature = "sqlite"))))]
+    #[cfg(feature = "postgres")]
     /// Sqlorm Database Connection
     pub type Connection = sqlx::PgConnection;
 
-    #[cfg(all(feature = "postgres", not(any(feature = "mysql", feature = "sqlite"))))]
+    #[cfg(feature = "postgres")]
     /// Sqlorm Database Row
     pub type Row = sqlx::postgres::PgRow;
 
-    #[cfg(all(feature = "mysql", not(any(feature = "postgres", feature = "sqlite"))))]
-    /// Sqlorm Database Driver
-    pub type Driver = sqlx::MySql;
-
-    #[cfg(all(feature = "mysql", not(any(feature = "postgres", feature = "sqlite"))))]
-    /// Sqlorm Database Pool
-    pub type Pool = sqlx::MySqlPool;
-
-    #[cfg(all(feature = "mysql", not(any(feature = "postgres", feature = "sqlite"))))]
-    /// Sqlorm Database Connection
-    pub type Connection = sqlx::MySqlConnection;
-
-    #[cfg(all(feature = "mysql", not(any(feature = "postgres", feature = "sqlite"))))]
-    /// Sqlorm Database Row
-    pub type Row = sqlx::mysql::MySqlRow;
-
-    #[cfg(all(feature = "sqlite", not(any(feature = "postgres", feature = "mysql"))))]
+    #[cfg(feature = "sqlite")]
     /// Sqlorm Database Driver
     pub type Driver = sqlx::Sqlite;
 
-    #[cfg(all(feature = "sqlite", not(any(feature = "postgres", feature = "mysql"))))]
+    #[cfg(feature = "sqlite")]
     /// Sqlorm Database Pool
     pub type Pool = sqlx::SqlitePool;
 
-    #[cfg(all(feature = "sqlite", not(any(feature = "postgres", feature = "mysql"))))]
+    #[cfg(feature = "sqlite")]
     /// Sqlorm Database Connection
     pub type Connection = sqlx::SqliteConnection;
 
-    #[cfg(all(feature = "sqlite", not(any(feature = "postgres", feature = "mysql"))))]
+    #[cfg(feature = "sqlite")]
     /// Sqlorm Database Row
     pub type Row = sqlx::sqlite::SqliteRow;
 }
-
-// Re-export driver types for use in macros
-pub use driver::*;
 
 #[doc(hidden)]
 pub use sqlx;

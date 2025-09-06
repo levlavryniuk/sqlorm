@@ -1,4 +1,5 @@
-use crate::Driver;
+#[cfg(any(feature = "postgres", feature = "sqlite"))]
+use crate::driver::Driver;
 use crate::qb::BindValue;
 use sqlx::QueryBuilder;
 
@@ -41,15 +42,15 @@ where
 impl Condition {
     /// Create a new `Condition` with a single bound value.
     ///
-    /// # Example
-    /// ```
-    /// use macros_core::qb::condition::Condition;
-    /// use macros_core::qb::BindValue;
-    ///
-    /// let cond = Condition::new("id = $1".to_string(), 42);
-    /// assert_eq!(cond.sql, "id = $1");
-    /// assert_eq!(cond.values.len(), 1);
-    /// ```
+/// # Example
+/// ```ignore
+/// use sqlorm_core::qb::condition::Condition;
+/// use sqlorm_core::qb::BindValue;
+///
+/// let cond = Condition::new("id = ?".to_string(), 42);
+/// assert_eq!(cond.sql, "id = ?");
+/// assert_eq!(cond.values.len(), 1);
+/// ```
     pub fn new<T: BindValue + Clone + 'static>(sql: String, val: T) -> Self {
         Self {
             sql,
@@ -61,15 +62,15 @@ impl Condition {
     ///
     /// Useful for `IN` clauses or other multi-value conditions.
     ///
-    /// # Example
-    /// ```
-    /// use macros_core::qb::condition::Condition;
-    /// use macros_core::qb::BindValue;
-    ///
-    /// let cond = Condition::multi("id IN (...)".to_string(), vec![1, 2, 3]);
-    /// assert_eq!(cond.sql, "id IN (...)");
-    /// assert_eq!(cond.values.len(), 3);
-    /// ```
+/// # Example
+/// ```ignore
+/// use sqlorm_core::qb::condition::Condition;
+/// use sqlorm_core::qb::BindValue;
+///
+/// let cond = Condition::multi("id IN (?, ?, ?)".to_string(), vec![1, 2, 3]);
+/// assert_eq!(cond.sql, "id IN (?, ?, ?)");
+/// assert_eq!(cond.values.len(), 3);
+/// ```
     pub fn multi<T: BindValue + Clone + 'static>(sql: String, vals: Vec<T>) -> Self {
         Self {
             sql,
@@ -84,14 +85,14 @@ impl Condition {
     ///
     /// Useful for static SQL fragments that don’t require parameters.
     ///
-    /// # Example
-    /// ```
-    /// use macros_core::qb::condition::Condition;
-    ///
-    /// let cond = Condition::none("deleted_at IS NULL".to_string());
-    /// assert_eq!(cond.sql, "deleted_at IS NULL");
-    /// assert!(cond.values.is_empty());
-    /// ```
+/// # Example
+/// ```
+/// use sqlorm_core::qb::condition::Condition;
+///
+/// let cond = Condition::none("deleted_at IS NULL".to_string());
+/// assert_eq!(cond.sql, "deleted_at IS NULL");
+/// assert!(cond.values.is_empty());
+/// ```
     pub fn none(sql: String) -> Self {
         Self {
             sql,

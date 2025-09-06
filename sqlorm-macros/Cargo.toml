@@ -9,9 +9,9 @@ proc-macro = true
 
 [features]
 default = []
-mysql = ["sqlorm-macros/mysql"]
-postgres = ["sqlorm-macros/postgres"]
-sqlite = ["sqlorm-macros/sqlite"]
+postgres = ["sqlx/postgres", "sqlorm-core/postgres"]
+sqlite = ["sqlx/sqlite", "sqlorm-core/sqlite"]
+
 
 [dependencies]
 sqlorm-core.workspace = true
