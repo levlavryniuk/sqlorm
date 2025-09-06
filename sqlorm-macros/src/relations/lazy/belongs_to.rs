@@ -30,7 +30,7 @@ pub fn belongs_to(tbl: &EntityStruct) -> TokenStream {
                         executor: E
                     ) -> sqlx::Result<Option<#other>>
                     where
-                        E: sqlx::postgres::PgExecutor<'a>
+                        E: sqlx::Executor<'a, Database = sqlorm_core::Driver>
                     {
                         #other::find_by_id(executor, self.#self_field).await
                     }

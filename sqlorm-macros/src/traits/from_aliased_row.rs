@@ -13,7 +13,7 @@ pub fn from_aliased_row(es: &EntityStruct) -> proc_macro2::TokenStream {
     quote! {
         impl macros_core::FromAliasedRow for #name {
             fn from_aliased_row(
-                row: &sqlx::postgres::PgRow,
+                row: &sqlorm_core::Row,
             ) -> sqlx::Result<Self> where Self: Sized+Default {
                 use sqlx::Row;
                 Ok(Self {

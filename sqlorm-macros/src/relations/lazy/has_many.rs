@@ -22,7 +22,7 @@ pub fn has_many(tbl: &EntityStruct) -> TokenStream {
                 let ref_table_ident = other;
 
                 let sql = format!(
-                    "SELECT * FROM {} WHERE {} = $1",
+                    "SELECT * FROM {} WHERE {} = ?",
                     ref_table_ident, on_field.1
                 );
 
@@ -32,7 +32,7 @@ pub fn has_many(tbl: &EntityStruct) -> TokenStream {
                         executor: E
                     ) -> Result<Vec<#ref_table_ident>, sqlx::Error>
                     where
-                        E: sqlx::postgres::PgExecutor<'a>
+                        E: sqlx::Executor<'a, Database = sqlorm_core::Driver>
                     {
                         let rows = sqlx::query_as::<_, #ref_table_ident>(#sql)
                             .bind(&self.#pk_ident)

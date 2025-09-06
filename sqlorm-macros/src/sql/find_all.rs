@@ -13,7 +13,7 @@ pub fn find_all(es: &EntityStruct) -> TokenStream {
                 executor: E
             ) -> sqlx::Result<Vec<Self>>
             where
-                E: sqlx::PgExecutor<'a>
+                E: sqlx::Executor<'a, Database = sqlorm_core::Driver>
             {
                 let query = format!(
                     "SELECT * FROM {table}",

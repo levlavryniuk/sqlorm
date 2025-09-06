@@ -1,6 +1,8 @@
 use proc_macro::TokenStream;
 use syn::parse_macro_input;
 
+// Note: proc-macro crates cannot export items, so we use full paths in generated code
+
 mod naming;
 mod traits;
 

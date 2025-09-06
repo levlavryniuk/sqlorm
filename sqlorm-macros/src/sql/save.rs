@@ -23,20 +23,18 @@ pub fn save(es: &EntityStruct) -> TokenStream {
         .filter(|f| !f.is_pk() && !f.is_ignored())
         .map(|f| &f.ident)
         .collect();
-    let field_count = non_pk_fields.len();
     let non_pk_names: Vec<String> = non_pk_fields
         .iter()
         .map(|id| id.to_string().to_lowercase())
         .collect();
 
-    let insert_placeholders: Vec<String> = (1..=non_pk_fields.len())
-        .map(|i| format!("${}", i))
+    let insert_placeholders: Vec<String> = (0..non_pk_fields.len())
+        .map(|_| "?".to_string())
         .collect();
 
     let update_assignments: Vec<String> = non_pk_names
         .iter()
-        .enumerate()
-        .map(|(i, name)| format!("{} = ${}", name, i + 1))
+        .map(|name| format!("{} = ?", name))
         .collect();
 
     let created_assign = es
@@ -66,7 +64,7 @@ pub fn save(es: &EntityStruct) -> TokenStream {
                 executor: E
             ) -> sqlx::Result<Self>
             where
-                E: sqlx::PgExecutor<'a>
+                E: sqlx::Executor<'a, Database = sqlorm_core::Driver>
             {
                 #created_assign
                 #updated_assign_insert
@@ -81,8 +79,8 @@ pub fn save(es: &EntityStruct) -> TokenStream {
                 );
 
                 let saved = sqlx::query_as::<_, #s_ident>(&query)
-                    #(.bind(&self.#non_pk_fields))*;
-                let saved = saved.fetch_one(executor)
+                    #(.bind(&self.#non_pk_fields))*
+                    .fetch_one(executor)
                     .await?;
 
                 *self = saved.clone();
@@ -94,19 +92,18 @@ pub fn save(es: &EntityStruct) -> TokenStream {
                 executor: E
             ) -> sqlx::Result<Self>
             where
-                E: sqlx::PgExecutor<'a>
+                E: sqlx::Executor<'a, Database = sqlorm_core::Driver>
             {
                 #updated_assign_update
 
                 let query = format!(
                     r#"UPDATE {table}
                  SET {updates}
-                 WHERE {pk} = ${pk_index}
+                 WHERE {pk} = ?
                  RETURNING *"#,
                     table = #table_name,
                     updates = [#(#update_assignments),*].join(", "),
                     pk = #pk_name,
-                    pk_index = #field_count + 1,
                 );
 
                 let saved = sqlx::query_as::<_, #s_ident>(&query)
@@ -124,7 +121,7 @@ pub fn save(es: &EntityStruct) -> TokenStream {
                 executor: E
             ) -> sqlx::Result<Self>
             where
-                E: sqlx::PgExecutor<'a>
+                E: sqlx::Executor<'a, Database = sqlorm_core::Driver>
             {
                 if self.#pk_ident == #pk_type::default() {
                     self.insert(executor).await

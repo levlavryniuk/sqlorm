@@ -120,15 +120,15 @@ pub fn executor_trait(es: &crate::EntityStruct) -> proc_macro2::TokenStream {
         where
             #s_name: Send + Sync + macros_core::Table + 'static,
         {
-            async fn fetch_one(self, pool: &sqlx::PgPool) -> sqlx::Result<#s_name>;
-            async fn fetch_optional(self, pool: &sqlx::PgPool) -> sqlx::Result<Option<#s_name>>;
-            async fn fetch_all(self, pool: &sqlx::PgPool) -> sqlx::Result<Vec<#s_name>>;
+            async fn fetch_one(self, pool: &sqlorm_core::Pool) -> sqlx::Result<#s_name>;
+            async fn fetch_optional(self, pool: &sqlorm_core::Pool) -> sqlx::Result<Option<#s_name>>;
+            async fn fetch_all(self, pool: &sqlorm_core::Pool) -> sqlx::Result<Vec<#s_name>>;
         }
 
         #[macros_core::async_trait]
         impl #tident for macros_core::QB<#s_name> where
     #s_name: Send + Sync + macros_core::Table + 'static,{
-            async fn fetch_one(self, pool: &sqlx::PgPool) -> sqlx::Result<#s_name> {
+            async fn fetch_one(self, pool: &sqlorm_core::Pool) -> sqlx::Result<#s_name> {
                 if self.eager.is_empty() && self.batch.is_empty() {
                     let row = self.build_query().build().fetch_one(pool).await?;
                     let core:#s_name = macros_core::FromAliasedRow::from_aliased_row(&row)?;
@@ -144,7 +144,7 @@ pub fn executor_trait(es: &crate::EntityStruct) -> proc_macro2::TokenStream {
                 Ok(core)
             }
 
-            async fn fetch_optional(self, pool: &sqlx::PgPool) -> sqlx::Result<Option<#s_name>> {
+            async fn fetch_optional(self, pool: &sqlorm_core::Pool) -> sqlx::Result<Option<#s_name>> {
                 if self.eager.is_empty() && self.batch.is_empty() {
                     let row = self.build_query().build().fetch_optional(pool).await?;
                     if let Some(row) = row {
@@ -167,7 +167,7 @@ pub fn executor_trait(es: &crate::EntityStruct) -> proc_macro2::TokenStream {
                 }
             }
 
-            async fn fetch_all(self, pool: &sqlx::PgPool) -> sqlx::Result<Vec<#s_name>> {
+            async fn fetch_all(self, pool: &sqlorm_core::Pool) -> sqlx::Result<Vec<#s_name>> {
                 let rows = self.build_query().build().fetch_all(pool).await?;
                 let mut results = Vec::new();
 

@@ -28,10 +28,10 @@ pub fn find(es: &EntityStruct) -> TokenStream {
                     value: #ftype
                 ) -> sqlx::Result<Option<#s_ident>>
                 where
-                    E: sqlx::PgExecutor<'a>
+                    E: sqlx::Executor<'a, Database = sqlorm_core::Driver>
                 {
                     let query = format!(
-                        "select * from {table} WHERE {col} = $1",
+                        "select * from {table} WHERE {col} = ?",
                         table = #table_name,
                         col = #col_name,
                     );
