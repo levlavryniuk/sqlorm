@@ -52,7 +52,7 @@ pub fn find(es: &EntityStruct) -> TokenStream {
                     value: #ftype
                 ) -> sqlx::Result<Option<#s_ident>>
                 where
-                    E: sqlx::Executor<'a, Database = sqlorm_core::Driver>
+                    E: sqlx::Executor<'a, Database = sqlorm::Driver>
                 {
                     let query = format!(
                         "select * from {table} WHERE {col} = ?",

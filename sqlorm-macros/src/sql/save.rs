@@ -128,7 +128,7 @@ pub fn save(es: &EntityStruct) -> TokenStream {
                 executor: E
             ) -> sqlx::Result<Self>
             where
-                E: sqlx::Executor<'a, Database = sqlorm_core::Driver>
+                E: sqlx::Executor<'a, Database = sqlorm::Driver>
             {
                 #created_assign
                 #updated_assign_insert
@@ -178,7 +178,7 @@ pub fn save(es: &EntityStruct) -> TokenStream {
                 executor: E
             ) -> sqlx::Result<Self>
             where
-                E: sqlx::Executor<'a, Database = sqlorm_core::Driver>
+                E: sqlx::Executor<'a, Database = sqlorm::Driver>
             {
                 #updated_assign_update
 
@@ -239,7 +239,7 @@ pub fn save(es: &EntityStruct) -> TokenStream {
                 executor: E
             ) -> sqlx::Result<Self>
             where
-                E: sqlx::Executor<'a, Database = sqlorm_core::Driver>
+                E: sqlx::Executor<'a, Database = sqlorm::Driver>
             {
                 if self.#pk_ident == #pk_type::default() {
                     self.insert(executor).await

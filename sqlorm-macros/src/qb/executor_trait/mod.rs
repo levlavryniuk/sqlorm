@@ -32,7 +32,7 @@ pub fn executor_trait(es: &crate::EntityStruct) -> proc_macro2::TokenStream {
             let on = Ident::new(r_name, other.span());
             Some(quote::quote! {
                 if let Some(relation) = self.eager.iter().find(|rel| rel.relation_name == #r_name) {
-                    let related_entity: #other = macros_core::FromAliasedRow::from_aliased_row(&row)?;
+                    let related_entity: #other = sqlorm::core::FromAliasedRow::from_aliased_row(&row)?;
                     core.#on = Some(related_entity);
                 }
             })
@@ -115,28 +115,28 @@ pub fn executor_trait(es: &crate::EntityStruct) -> proc_macro2::TokenStream {
         .collect();
 
     quote::quote! {
-        #[macros_core::async_trait]
+        #[sqlorm::core::async_trait]
         pub trait #tident
         where
-            #s_name: Send + Sync + macros_core::Table + 'static,
+            #s_name: Send + Sync + sqlorm::core::Table + 'static,
         {
-            async fn fetch_one(self, pool: &sqlorm_core::Pool) -> sqlx::Result<#s_name>;
-            async fn fetch_optional(self, pool: &sqlorm_core::Pool) -> sqlx::Result<Option<#s_name>>;
-            async fn fetch_all(self, pool: &sqlorm_core::Pool) -> sqlx::Result<Vec<#s_name>>;
+            async fn fetch_one(self, pool: &sqlorm::core::Pool) -> sqlx::Result<#s_name>;
+            async fn fetch_optional(self, pool: &sqlorm::core::Pool) -> sqlx::Result<Option<#s_name>>;
+            async fn fetch_all(self, pool: &sqlorm::core::Pool) -> sqlx::Result<Vec<#s_name>>;
         }
 
-        #[macros_core::async_trait]
-        impl #tident for macros_core::QB<#s_name> where
-    #s_name: Send + Sync + macros_core::Table + 'static,{
-            async fn fetch_one(self, pool: &sqlorm_core::Pool) -> sqlx::Result<#s_name> {
+        #[sqlorm::core::async_trait]
+        impl #tident for sqlorm::core::QB<#s_name> where
+    #s_name: Send + Sync + sqlorm::core::Table + 'static,{
+            async fn fetch_one(self, pool: &sqlorm::core::Pool) -> sqlx::Result<#s_name> {
                 if self.eager.is_empty() && self.batch.is_empty() {
                     let row = self.build_query().build().fetch_one(pool).await?;
-                    let core:#s_name = macros_core::FromAliasedRow::from_aliased_row(&row)?;
+                    let core:#s_name = sqlorm::core::FromAliasedRow::from_aliased_row(&row)?;
                     return Ok(core);
                 }
 
                 let row = self.build_query().build().fetch_one(pool).await?;
-                let mut core:#s_name = macros_core::FromAliasedRow::from_aliased_row(&row)?;
+                let mut core:#s_name = sqlorm::core::FromAliasedRow::from_aliased_row(&row)?;
 
                 #(#eager)*
                 #(#batch_one)*
@@ -144,11 +144,11 @@ pub fn executor_trait(es: &crate::EntityStruct) -> proc_macro2::TokenStream {
                 Ok(core)
             }
 
-            async fn fetch_optional(self, pool: &sqlorm_core::Pool) -> sqlx::Result<Option<#s_name>> {
+            async fn fetch_optional(self, pool: &sqlorm::core::Pool) -> sqlx::Result<Option<#s_name>> {
                 if self.eager.is_empty() && self.batch.is_empty() {
                     let row = self.build_query().build().fetch_optional(pool).await?;
                     if let Some(row) = row {
-                        let core:#s_name = macros_core::FromAliasedRow::from_aliased_row(&row)?;
+                        let core:#s_name = sqlorm::core::FromAliasedRow::from_aliased_row(&row)?;
                         return Ok(Some(core));
                     }
                     return Ok(None);
@@ -156,7 +156,7 @@ pub fn executor_trait(es: &crate::EntityStruct) -> proc_macro2::TokenStream {
 
                 let row = self.build_query().build().fetch_optional(pool).await?;
                 if let Some(row) = row {
-                    let mut core:#s_name = macros_core::FromAliasedRow::from_aliased_row(&row)?;
+                    let mut core:#s_name = sqlorm::core::FromAliasedRow::from_aliased_row(&row)?;
 
                     #(#eager)*
                     #(#batch_one)*
@@ -167,12 +167,12 @@ pub fn executor_trait(es: &crate::EntityStruct) -> proc_macro2::TokenStream {
                 }
             }
 
-            async fn fetch_all(self, pool: &sqlorm_core::Pool) -> sqlx::Result<Vec<#s_name>> {
+            async fn fetch_all(self, pool: &sqlorm::core::Pool) -> sqlx::Result<Vec<#s_name>> {
                 let rows = self.build_query().build().fetch_all(pool).await?;
                 let mut results = Vec::new();
 
                 for row in rows {
-                    let mut core: #s_name = macros_core::FromAliasedRow::from_aliased_row(&row)?;
+                    let mut core: #s_name = sqlorm::core::FromAliasedRow::from_aliased_row(&row)?;
                     #(#eager)*
                     results.push(core);
                 }

@@ -12,21 +12,21 @@ use crate::{
 };
 
 /// Parses a single struct field into an `EntityField` with all its metadata.
-/// 
+///
 /// This function processes all `#[sql(...)]` and `#[sqlx(...)]` attributes on a field,
 /// extracting information about:
 /// - Field type (primary key, unique, timestamp, etc.)
 /// - Relationships (belongs_to, has_many, has_one)
 /// - Whether the field should be ignored in SQL operations
-/// 
+///
 /// # Supported Attributes
-/// 
+///
 /// ## `#[sql(...)]`
 /// - `pk` - Mark as primary key
 /// - `unique` - Mark as unique (generates find_by_* methods)
 /// - `timestamp = "type"` - Automatic timestamp management (created_at, updated_at, deleted_at)
 /// - `relation(...)` - Define relationships
-/// 
+///
 /// ## `#[sqlx(...)]`
 /// - `skip` - Exclude from SQL operations
 pub fn parse_entity_field(field: &Field) -> Result<EntityField> {
@@ -101,25 +101,25 @@ pub fn parse_entity_field(field: &Field) -> Result<EntityField> {
 }
 
 /// Parses a relationship attribute into a `Relation` struct.
-/// 
+///
 /// Expected syntax:
-/// ```text
+/// ```ignore
 /// #[sql(relation(TYPE -> TargetEntity, relation = "field_name", on = foreign_key))]
 /// ```
-/// 
+///
 /// Where:
 /// - `TYPE` is one of: `belongs_to`, `has_many`, `has_one`
 /// - `TargetEntity` is the related entity struct name
 /// - `"field_name"` is the name of the field that will hold the relationship
 /// - `foreign_key` is the field name that contains the foreign key
-/// 
+///
 /// # Example
-/// 
-/// ```rust
+///
+/// ```ignore
 /// #[sql(relation(has_many -> Post, relation = "posts", on = user_id))]
 /// pub id: i64,
 /// ```
-/// 
+///
 /// This creates a `has_many` relationship to `Post` entities, accessible via
 /// a `posts` field, where the `Post` table has a `user_id` foreign key.
 pub fn parse_relation(input: ParseStream, self_ident: Ident) -> Result<Relation> {

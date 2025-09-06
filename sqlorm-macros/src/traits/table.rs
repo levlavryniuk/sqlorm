@@ -16,13 +16,13 @@ pub fn table(es: &EntityStruct) -> TokenStream {
     let field_names: Vec<String> = fields.iter().map(|f| f.ident.to_string()).collect();
 
     quote! {
-        impl macros_core::Table for #struct_ident {
+        impl sqlorm::Table for #struct_ident {
             const TABLE_NAME: &'static str = #table_name;
             const PK: &'static str = #pk_name;
             const COLUMNS: &'static [&'static str] = &[#(#field_names),*];
 
-            fn table_info() -> macros_core::TableInfo {
-                macros_core::TableInfo {
+            fn table_info() -> sqlorm_core::TableInfo {
+                sqlorm_core::TableInfo {
                     name: Self::TABLE_NAME,
                     alias: #alias.to_string(),
                     // convert &'static [&'static str] into owned Vec<String>

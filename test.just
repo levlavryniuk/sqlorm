@@ -1,5 +1,5 @@
 
-default: p s examples
+default: postgres sqlite
 
 postgres:
     cargo test --workspace --features postgres -- --nocapture
@@ -7,35 +7,24 @@ postgres:
 sqlite:
     cargo test --workspace --features sqlite -- --nocapture
 
-all: postgres sqlite examples
-
-p:
-    cargo nextest run --workspace --features postgres --cargo-quiet --cargo-quiet
-
-s:
-    cargo nextest run --workspace --features sqlite --cargo-quiet --cargo-quiet
 
 pp PACKAGE:
     cargo nextest run --cargo-quiet --cargo-quiet --package {{PACKAGE}}
 
 examples: examples-postgres examples-sqlite
 
-# Test PostgreSQL examples
 examples-postgres:
     @echo "🐘 Testing PostgreSQL examples..."
     cargo test -p sqlorm-postgres-example --features postgres --quiet
 
-# Test SQLite examples  
 examples-sqlite:
     @echo "🗄️  Testing SQLite examples..."
     cargo test -p sqlorm-sqlite-example --features sqlite --quiet
 
-# Test specific example suite for PostgreSQL
 examples-postgres-suite SUITE:
     @echo "🐘 Testing PostgreSQL {{SUITE}} suite..."
     cargo test -p sqlorm-postgres-example --features postgres --test {{SUITE}} --quiet
 
-# Test specific example suite for SQLite
 examples-sqlite-suite SUITE:
     @echo "🗄️  Testing SQLite {{SUITE}} suite..."
     cargo test -p sqlorm-sqlite-example --features sqlite --test {{SUITE}} --quiet
@@ -102,14 +91,10 @@ examples-nextest-sqlite:
 # Development & CI Commands
 # =========================
 
-# Run all tests including examples (for CI)
-ci: all
 
-# Quick development check - compile and run core tests
-dev: examples-check p s
 
 # Clean and run full test suite
-full-test: clean all
+full-test: clean 
 
 clean:
     @echo "🧹 Cleaning build artifacts..."
@@ -119,6 +104,15 @@ clean:
 examples-postgres-custom URL:
     @echo "🐘 Testing PostgreSQL examples with custom URL..."
     TEST_DATABASE_URL={{URL}} cargo test -p sqlorm-postgres-example --features postgres --quiet
+
+# Fix macro references (replace macros_core with sqlorm_core)
+fix-macro-refs:
+    @echo "🔧 Fixing macro references in sqlorm-macros crate..."
+    find sqlorm-macros/src -name "*.rs" -type f -exec sed -i 's/macros_core::/sqlorm_core::/g' {} \;
+    @echo "✅ Replaced all 'macros_core::' with 'sqlorm_core::'"
+    find sqlorm-macros/src -name "*.rs" -type f -exec grep -l "macros_core" {} \; | while read file; do \
+        echo "⚠️  Still contains 'macros_core': $$file"; \
+    done || echo "✅ No remaining 'macros_core' references found"
 
 # Show all available example commands
 examples-help:

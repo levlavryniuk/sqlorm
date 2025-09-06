@@ -11,9 +11,9 @@ pub fn from_aliased_row(es: &EntityStruct) -> proc_macro2::TokenStream {
     let col_names: Vec<_> = fields.iter().map(|f| f.ident.to_string()).collect();
 
     quote! {
-        impl macros_core::FromAliasedRow for #name {
+        impl sqlorm::core::FromAliasedRow for #name {
             fn from_aliased_row(
-                row: &sqlorm_core::Row,
+                row: &sqlorm::Row,
             ) -> sqlx::Result<Self> where Self: Sized+Default {
                 use sqlx::Row;
                 Ok(Self {

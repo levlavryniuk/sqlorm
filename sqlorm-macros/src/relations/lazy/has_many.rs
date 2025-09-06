@@ -21,10 +21,7 @@ pub fn has_many(tbl: &EntityStruct) -> TokenStream {
                 let pk_ident = &pk.ident;
                 let ref_table_ident = other;
 
-                let sql = format!(
-                    "SELECT * FROM {} WHERE {} = ?",
-                    ref_table_ident, on_field.1
-                );
+                let sql = format!("SELECT * FROM {} WHERE {} = ?", ref_table_ident, on_field.1);
 
                 Some(quote! {
                     pub async fn #fn_ident<'a, E>(
@@ -32,7 +29,7 @@ pub fn has_many(tbl: &EntityStruct) -> TokenStream {
                         executor: E
                     ) -> Result<Vec<#ref_table_ident>, sqlx::Error>
                     where
-                        E: sqlx::Executor<'a, Database = sqlorm_core::Driver>
+                        E: sqlx::Executor<'a, Database = sqlorm::Driver>
                     {
                         let rows = sqlx::query_as::<_, #ref_table_ident>(#sql)
                             .bind(&self.#pk_ident)
