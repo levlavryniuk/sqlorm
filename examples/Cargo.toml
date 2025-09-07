@@ -1,0 +1,54 @@
+[package]
+name = "sqlorm-examples"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+sqlorm = { path = "../", default-features = false }
+entities = { path = "common/entities", default-features = false }
+migrations-helper = { path = "common/migrations-helper", default-features = false }
+
+sqlx = { version = "0.8", default-features = false, features = [
+  "runtime-tokio-rustls",
+  "chrono",
+  "uuid",
+] }
+
+tokio = { version = "1.0", features = ["full"] }
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1.0", features = ["v4"] }
+
+tempfile = { version = "3.8", optional = true }
+
+[features]
+default = []
+postgres = [
+  "sqlorm/postgres",
+  "entities/postgres",
+  "migrations-helper/postgres",
+  "sqlx/postgres",
+]
+sqlite = [
+  "sqlorm/sqlite",
+  "entities/sqlite",
+  "migrations-helper/sqlite",
+  "sqlx/sqlite",
+  "dep:tempfile",
+]
+uuid = ["sqlx/uuid", "entities/uuid"]
+
+[[test]]
+name = "crud"
+path = "tests/crud.rs"
+
+[[test]]
+name = "filters"
+path = "tests/filters.rs"
+
+[[test]]
+name = "relations"
+path = "tests/relations.rs"
+
+[[test]]
+name = "select"
+path = "tests/select.rs"

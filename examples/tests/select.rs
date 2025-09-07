@@ -1,20 +1,27 @@
-use entities::{User, Jar, Donation};
-use sqlorm_sqlite_example::create_clean_db;
+use entities::{Donation, Jar, User};
+use sqlorm::Executor;
+use sqlorm_examples::create_clean_db;
+use uuid::Uuid;
 
-async fn setup_select_test_data(pool: &sqlorm_core::Pool) -> (User, Jar, Donation) {
+#[cfg(feature = "postgres")]
+type NotReallyUuid = uuid::Uuid;
+#[cfg(feature = "sqlite")]
+type NotReallyUuid = String;
+
+async fn setup_select_test_data(pool: &sqlorm::Pool) -> (User, Jar, Donation) {
     let mut user = User::test_user("select@example.com", "selectuser");
     user.bio = Some("A test bio".to_string());
     user = user.save(pool).await.expect("Failed to save user");
-    
+
     let mut jar = Jar::test_jar(user.id, "selectjar");
     jar.title = "Select Test Jar".to_string();
     jar.description = Some("A jar for testing selections".to_string());
     jar = jar.save(pool).await.expect("Failed to save jar");
-    
+
     let mut donation = Donation::test_donation(jar.id, user.id, 42.0);
     donation.note = Some("Test donation".to_string());
     donation = donation.save(pool).await.expect("Failed to save donation");
-    
+
     (user, jar, donation)
 }
 
@@ -83,8 +90,8 @@ async fn test_donation_select_with_uuid() {
     let pool = create_clean_db().await;
     let (_user, jar, donation) = setup_select_test_data(&pool).await;
 
-    let (id, jar_id, amount): (uuid::Uuid, i64, f64) = Donation::query()
-        .filter(Donation::ID.eq(donation.id))
+    let (id, jar_id, amount): (Uuid, i64, f64) = Donation::query()
+        .filter(Donation::ID.eq(donation.id.clone()))
         .select(vec![
             Donation::ID.as_ref(),
             Donation::JAR_ID.as_ref(),
@@ -94,7 +101,7 @@ async fn test_donation_select_with_uuid() {
         .await
         .expect("Failed to select donation fields");
 
-    assert_eq!(id, donation.id);
+    assert_eq!(&id.to_string(), &donation.id.to_string());
     assert_eq!(jar_id, jar.id);
     assert_eq!(amount, 42.0);
 }
@@ -123,11 +130,11 @@ async fn test_select_nullable_fields() {
 #[tokio::test]
 async fn test_select_with_filtering() {
     let pool = create_clean_db().await;
-    
+
     // Create multiple users
     let mut user1 = User::test_user("select1@example.com", "select1");
     user1 = user1.save(&pool).await.expect("Failed to save user1");
-    
+
     let mut user2 = User::test_user("select2@example.com", "select2");
     user2 = user2.save(&pool).await.expect("Failed to save user2");
 
@@ -151,8 +158,12 @@ async fn test_select_with_filtering() {
         .expect("Failed to select multiple with filtering");
 
     assert!(results.len() >= 2);
-    assert!(results.iter().any(|(e, u)| e == "select1@example.com" && u == "select1"));
-    assert!(results.iter().any(|(e, u)| e == "select2@example.com" && u == "select2"));
+    assert!(results
+        .iter()
+        .any(|(e, u)| e == "select1@example.com" && u == "select1"));
+    assert!(results
+        .iter()
+        .any(|(e, u)| e == "select2@example.com" && u == "select2"));
 }
 
 #[tokio::test]
@@ -160,7 +171,6 @@ async fn test_select_boolean_and_numeric_fields() {
     let pool = create_clean_db().await;
     let (_user, jar, donation) = setup_select_test_data(&pool).await;
 
-    // Test numeric fields from jar
     let (minimal_donation, total_amount, total_donations): (f64, f64, i32) = Jar::query()
         .filter(Jar::ID.eq(jar.id))
         .select(vec![
@@ -176,7 +186,6 @@ async fn test_select_boolean_and_numeric_fields() {
     assert_eq!(total_amount, 0.0);
     assert_eq!(total_donations, 0);
 
-    // Test boolean fields from donation
     let (is_payed, is_refunded): (bool, bool) = Donation::query()
         .filter(Donation::ID.eq(donation.id))
         .select(vec![
@@ -196,16 +205,13 @@ async fn test_select_timestamp_fields() {
     let pool = create_clean_db().await;
     let (user, _jar, donation) = setup_select_test_data(&pool).await;
 
-    // Test timestamp fields from user
-    let (created_at, updated_at): (chrono::DateTime<chrono::Utc>, chrono::DateTime<chrono::Utc>) = User::query()
-        .filter(User::ID.eq(user.id))
-        .select(vec![
-            User::CREATED_AT.as_ref(),
-            User::UPDATED_AT.as_ref(),
-        ])
-        .fetch_one_as(&pool)
-        .await
-        .expect("Failed to select timestamp fields");
+    let (created_at, updated_at): (chrono::DateTime<chrono::Utc>, chrono::DateTime<chrono::Utc>) =
+        User::query()
+            .filter(User::ID.eq(user.id))
+            .select(vec![User::CREATED_AT.as_ref(), User::UPDATED_AT.as_ref()])
+            .fetch_one_as(&pool)
+            .await
+            .expect("Failed to select timestamp fields");
 
     // Timestamps should be recent (within last minute)
     let now = chrono::Utc::now();
@@ -213,7 +219,10 @@ async fn test_select_timestamp_fields() {
     assert!(now.signed_duration_since(updated_at).num_seconds() < 60);
 
     // Test optional timestamp fields from donation
-    let (payed_at, refunded_at): (Option<chrono::DateTime<chrono::Utc>>, Option<chrono::DateTime<chrono::Utc>>) = Donation::query()
+    let (payed_at, refunded_at): (
+        Option<chrono::DateTime<chrono::Utc>>,
+        Option<chrono::DateTime<chrono::Utc>>,
+    ) = Donation::query()
         .filter(Donation::ID.eq(donation.id))
         .select(vec![
             Donation::PAYED_AT.as_ref(),
@@ -229,19 +238,15 @@ async fn test_select_timestamp_fields() {
 
 #[tokio::test]
 async fn test_select_no_columns() {
-    let pool = create_clean_db().await;
-    let (user, _jar, _donation) = setup_select_test_data(&pool).await;
+    let _pool = create_clean_db().await;
+    let _setup = setup_select_test_data(&_pool).await;
 
-    // Selecting no columns should return empty tuple
-    let result: () = User::query()
-        .filter(User::ID.eq(user.id))
-        .select(vec![])
-        .fetch_one_as(&pool)
-        .await
-        .expect("Failed to select no columns");
-
-    // Should succeed and return unit type
-    assert_eq!(result, ());
+    // This should panic now that we've added validation for empty select
+    let result = std::panic::catch_unwind(|| {
+        let query = User::query();
+        query.select::<()>(vec![])
+    });
+    assert!(result.is_err(), "Empty select should panic");
 }
 
 #[tokio::test]
@@ -250,22 +255,22 @@ async fn test_select_single_column() {
     let (user, _jar, _donation) = setup_select_test_data(&pool).await;
 
     // Test selecting a single column
-    let email: String = User::query()
+    let email: (String,) = User::query()
         .filter(User::ID.eq(user.id))
         .select(vec![User::EMAIL.as_ref()])
         .fetch_one_as(&pool)
         .await
         .expect("Failed to select single column");
 
-    assert_eq!(email, "select@example.com");
+    assert_eq!(email.0, "select@example.com");
 
     // Test selecting a single numeric column
-    let id: i64 = User::query()
+    let id: (i64,) = User::query()
         .filter(User::EMAIL.eq("select@example.com".to_string()))
         .select(vec![User::ID.as_ref()])
         .fetch_one_as(&pool)
         .await
         .expect("Failed to select single numeric column");
 
-    assert_eq!(id, user.id);
+    assert_eq!(id.0, user.id);
 }

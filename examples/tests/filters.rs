@@ -1,7 +1,9 @@
-use entities::{User, Jar};
-use sqlorm_sqlite_example::create_clean_db;
+use entities::JarExecutor;
+use entities::UserExecutor;
+use entities::{Jar, User};
+use sqlorm_examples::create_clean_db;
 
-async fn setup_test_users(pool: &sqlorm_core::Pool) -> Vec<User> {
+async fn setup_test_users(pool: &sqlorm::Pool) -> Vec<User> {
     let mut users = vec![
         User::test_user("eq1@example.com", "eq1"),
         User::test_user("eq2@example.com", "eq2"),
@@ -11,7 +13,7 @@ async fn setup_test_users(pool: &sqlorm_core::Pool) -> Vec<User> {
 
     // Set bio for some users
     users[2].bio = Some("Has bio content".to_string());
-    
+
     let mut saved_users = Vec::new();
     for mut user in users {
         saved_users.push(user.save(pool).await.expect("Failed to save user"));
@@ -131,12 +133,11 @@ async fn test_filter_in_and_not_in() {
     assert!(!results.iter().any(|u| u.id == u1.id));
     assert!(!results.iter().any(|u| u.id == u2.id));
 
-    // Test empty IN list (should fail)
-    let result = User::query()
-        .filter(User::ID.in_(vec![]))
-        .fetch_all(&pool)
-        .await;
-    assert!(result.is_err(), "Empty IN should fail or return error");
+    // Test empty IN list (should panic)
+    std::panic::catch_unwind(|| {
+        let _ = User::ID.in_(vec![]);
+    })
+    .expect_err("Empty IN list should panic");
 }
 
 #[tokio::test]
@@ -150,7 +151,7 @@ async fn test_filter_is_null_and_is_not_null() {
         .fetch_all(&pool)
         .await
         .expect("Failed to filter with is_null");
-    
+
     // Should find users without bio (eq1, eq2, other)
     assert!(null_results.len() >= 3);
     assert!(null_results.iter().any(|u| u.username == "eq1"));
@@ -162,7 +163,7 @@ async fn test_filter_is_null_and_is_not_null() {
         .fetch_all(&pool)
         .await
         .expect("Failed to filter with is_not_null");
-        
+
     // Should find the "like_me" user who has a bio
     assert!(not_null_results.iter().any(|u| u.username == "like_me"));
 }
@@ -202,22 +203,25 @@ async fn test_filter_between_and_not_between() {
         .fetch_all(&pool)
         .await
         .expect("Failed to filter with reversed between");
-    assert!(results.is_empty(), "Between with reversed bounds should return no rows");
+    assert!(
+        results.is_empty(),
+        "Between with reversed bounds should return no rows"
+    );
 }
 
 #[tokio::test]
 async fn test_multiple_filters() {
     let pool = create_clean_db().await;
-    
+
     // Create a user and jar
     let mut user = User::test_user("owner@example.com", "owner");
     user = user.save(&pool).await.expect("Failed to save user");
-    
+
     let mut jar1 = Jar::test_jar(user.id, "jar1");
     jar1.title = "Expensive Jar".to_string();
     jar1.minimal_donation = 10.0;
     jar1 = jar1.save(&pool).await.expect("Failed to save jar1");
-    
+
     let mut jar2 = Jar::test_jar(user.id, "jar2");
     jar2.title = "Cheap Jar".to_string();
     jar2.minimal_donation = 1.0;
@@ -230,7 +234,7 @@ async fn test_multiple_filters() {
         .fetch_all(&pool)
         .await
         .expect("Failed to apply multiple filters");
-    
+
     assert_eq!(results.len(), 1);
     assert_eq!(results[0].id, jar1.id);
     assert_eq!(results[0].title, "Expensive Jar");

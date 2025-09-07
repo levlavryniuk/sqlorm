@@ -1,153 +1,101 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use sqlorm::sqlx::FromRow;
 use sqlorm::Entity;
 use uuid::Uuid;
 
-/// User entity with unique email field and timestamp tracking.
-/// Demonstrates:
-/// - Primary key with `#[sql(pk)]`
-/// - Unique field with `#[sql(unique)]` (generates `find_by_email` method)
-/// - Automatic timestamp management for created_at/updated_at
-/// - Has-many relationship to Jar entities
-/// - Skipped field for lazy-loaded relationships
-#[derive(Debug, Entity, sqlx::FromRow, Clone, Default, Serialize, Deserialize)]
-#[table_name(name = "users")]
+#[derive(Debug, Entity, FromRow, Clone, Serialize, Deserialize, Default)]
+#[table_name(name = "user")]
 pub struct User {
     #[sql(pk)]
     #[sql(relation(has_many -> Jar, relation = "jars", on = owner_id))]
     #[sql(relation(has_many -> Donation, relation = "payed_donations", on = payer_id))]
     pub id: i64,
-    
     #[sql(unique)]
     pub email: String,
-    
+    #[serde(skip)]
     pub password: String,
+    #[sql(unique)]
     pub username: String,
     pub first_name: String,
     pub last_name: String,
-    pub bio: Option<String>,
-    pub wallpaper_url: Option<String>,
-    
     #[sqlx(skip)]
     pub jars: Option<Vec<Jar>>,
-    
+    pub wallpaper_url: Option<String>,
+    pub avatar_url: Option<String>,
     #[sqlx(skip)]
     pub payed_donations: Option<Vec<Donation>>,
-    
+    pub bio: Option<String>,
     #[sql(timestamp = "created_at")]
     pub created_at: DateTime<Utc>,
-    
     #[sql(timestamp = "updated_at")]
     pub updated_at: DateTime<Utc>,
+    #[sql(timestamp = "deleted_at")]
+    pub deleted_at: Option<DateTime<Utc>>,
 }
 
-/// Jar entity representing a donation jar.
-/// Demonstrates:
-/// - Primary key with auto-increment
-/// - Belongs-to relationship to User via owner_id
-/// - Has-many relationship to Donation entities
-/// - Optional fields with proper nullability
-#[derive(Debug, Entity, sqlx::FromRow, Clone, Default, Serialize, Deserialize)]
-#[table_name(name = "jars")]
+#[derive(Debug, Default, Entity, Clone, FromRow, Serialize, Deserialize)]
+#[table_name(name = "jar")]
 pub struct Jar {
     #[sql(pk)]
-    #[sql(relation(belongs_to -> User, relation = "owner", on = owner_id))]
     #[sql(relation(has_many -> Donation, relation = "donations", on = jar_id))]
     pub id: i64,
-    
     pub title: String,
     pub description: Option<String>,
-    pub minimal_donation: f64,
+    pub minimal_donation: f32,
     pub total_amount: f64,
     pub total_donations: i32,
-    
     #[sql(unique)]
     pub alias: String,
-    
+    pub hide_earnings: bool,
     pub goal: Option<f64>,
-    
-    /// Foreign key to users table
+    #[sql(relation(belongs_to -> User, relation = "owner", on = id))]
     pub owner_id: i64,
-    
     #[sqlx(skip)]
     pub owner: Option<User>,
-    
+
     #[sqlx(skip)]
     pub donations: Option<Vec<Donation>>,
-    
+
     #[sql(timestamp = "created_at")]
     pub created_at: DateTime<Utc>,
-    
     #[sql(timestamp = "updated_at")]
     pub updated_at: DateTime<Utc>,
+    #[sql(timestamp = "deleted_at")]
+    pub deleted_at: Option<DateTime<Utc>>,
 }
 
-/// Donation entity with UUID primary key.
-/// Demonstrates:
-/// - UUID primary key instead of integer
-/// - Multiple belongs-to relationships
-/// - Boolean fields
-/// - Optional timestamp fields with nullable handling
-#[derive(Debug, Entity, sqlx::FromRow, Clone, Serialize, Deserialize)]
-#[table_name(name = "donations")]
+#[derive(Debug, Entity, Default, FromRow, Clone, Serialize, Deserialize)]
+#[table_name(name = "donation")]
 pub struct Donation {
     #[sql(pk)]
-    #[sql(relation(belongs_to -> Jar, relation = "jar", on = jar_id))]
-    #[sql(relation(belongs_to -> User, relation = "payer", on = payer_id))]
     pub id: Uuid,
-    
     pub amount: f64,
     pub tip: f64,
-    pub transaction_id: Option<String>,
-    pub note: Option<String>,
-    pub is_payed: bool,
-    pub is_refunded: bool,
-    
-    /// Foreign keys
+
+    #[sql(relation(belongs_to -> Jar, relation = "jar", on = id))]
     pub jar_id: i64,
-    pub payer_id: i64,
-    
     #[sqlx(skip)]
     pub jar: Option<Jar>,
-    
+
+    #[sql(relation(belongs_to -> User, relation = "payer", on = id))]
+    pub payer_id: i64,
     #[sqlx(skip)]
     pub payer: Option<User>,
-    
-    pub payed_at: Option<DateTime<Utc>>,
+
+    pub is_payed: bool,
+    pub transaction_id: Option<String>,
+    pub note: Option<String>,
+    pub is_refunded: bool,
     pub refunded_at: Option<DateTime<Utc>>,
+    #[sql(timestamp = "deleted_at")]
     pub deleted_at: Option<DateTime<Utc>>,
-    
     #[sql(timestamp = "created_at")]
     pub created_at: DateTime<Utc>,
-    
     #[sql(timestamp = "updated_at")]
     pub updated_at: DateTime<Utc>,
+    pub payed_at: Option<DateTime<Utc>>,
 }
-
-impl Default for Donation {
-    fn default() -> Self {
-        Self {
-            id: Uuid::new_v4(),
-            amount: 0.0,
-            tip: 0.0,
-            transaction_id: None,
-            note: None,
-            is_payed: false,
-            is_refunded: false,
-            jar_id: 0,
-            payer_id: 0,
-            jar: None,
-            payer: None,
-            payed_at: None,
-            refunded_at: None,
-            deleted_at: None,
-            created_at: Utc::now(),
-            updated_at: Utc::now(),
-        }
-    }
-}
-
-/// Helper function to create test data
 impl User {
     /// Creates a test user with default values
     pub fn test_user(email: &str, username: &str) -> Self {

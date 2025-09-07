@@ -93,22 +93,3 @@ pub fn derive_entity(input: TokenStream) -> TokenStream {
     let es = parse_macro_input!(input as EntityStruct);
     entity::handle(es).into()
 }
-
-/// Generates column enumeration for query builder integration.
-///
-/// This macro creates a `Columns` enum for the entity struct, enabling type-safe
-/// column references in query building. Each non-ignored field becomes a variant
-/// in the enum.
-///
-/// The generated enum implements traits necessary for the query builder system,
-/// allowing for compile-time verified SQL generation.
-///
-/// # Note
-///
-/// This macro is typically used internally by the `Entity` derive macro and is not
-/// commonly used directly by end users. It's automatically applied when deriving `Entity`.
-#[proc_macro_derive(GenColumns)]
-pub fn gen_columns_handler(input: TokenStream) -> TokenStream {
-    let es = parse_macro_input!(input as EntityStruct);
-    gen_columns::handle(&es).into()
-}

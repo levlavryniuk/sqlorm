@@ -9,6 +9,7 @@ proc-macro = true
 
 [features]
 default = []
+uuid = ["dep:uuid"]
 postgres = ["sqlx/postgres", "sqlorm-core/postgres"]
 sqlite = ["sqlx/sqlite", "sqlorm-core/sqlite"]
 
@@ -23,3 +24,7 @@ syn = { version = "2.0.39", default-features = false, features = [
   "extra-traits",
 ] }
 quote = { version = "1.0.14", default-features = false }
+
+[dependencies.uuid]
+workspace = true
+optional = true

@@ -52,3 +52,24 @@ fn multiple_filters_and_in_sql() {
     assert_eq!(sql, "SELECT u.id AS uid, u.name AS uname FROM \"users\" AS u WHERE u.id > ? AND u.name IN (?, ?) AND u.name LIKE ?");
 }
 
+#[test]
+#[should_panic(expected = "Cannot select empty column list. At least one column must be specified.")]
+fn select_empty_columns_panics() {
+    let base = TableInfo { name: "users", alias: "u".to_string(), columns: vec!["id"] };
+    let _qb = QB::<()>::new(base).select::<()>(vec![]);
+}
+
+#[test]
+#[should_panic(expected = "Cannot create IN condition with empty value list. At least one value must be specified.")]
+fn in_empty_values_panics() {
+    let col = Column::<i32> { name: "id", table_alias: "u", _marker: PhantomData };
+    let _cond = col.in_(vec![]);
+}
+
+#[test]
+#[should_panic(expected = "Cannot create NOT IN condition with empty value list. At least one value must be specified.")]
+fn not_in_empty_values_panics() {
+    let col = Column::<i32> { name: "id", table_alias: "u", _marker: PhantomData };
+    let _cond = col.not_in(vec![]);
+}
+

@@ -7,10 +7,9 @@ edition = "2024"
 members = [
   "sqlorm-core",
   "sqlorm-macros",
-  # "examples/common/entities",
-  # "examples/common/migrations-helper",
-  # "examples/postgres",
-  # "examples/sqlite",
+  "examples/common/entities",
+  "examples/common/migrations-helper",
+  "examples",
 ]
 
 [workspace.dependencies]
@@ -18,8 +17,9 @@ sqlorm-core = { path = "sqlorm-core" }
 sqlorm-macros = { path = "sqlorm-macros" }
 async-trait = "0.1.8"
 lazy_static = "1.5"
-sqlx = { version = "0.8", features = ["chrono"] }
+sqlx = { version = "0.8", features = ["chrono", "uuid"] }
 thiserror = "2"
+uuid = { version = "1.0", features = ["v4", "serde"] }
 
 
 [dependencies]
@@ -32,6 +32,7 @@ sqlx.workspace = true
 default = []
 postgres = ["sqlorm-core/postgres", "sqlorm-macros/postgres"]
 sqlite = ["sqlorm-core/sqlite", "sqlorm-macros/sqlite"]
+uuid = ["sqlorm-core/uuid", "sqlorm-macros/uuid"]
 
 
 [package.metadata.docs.rs]

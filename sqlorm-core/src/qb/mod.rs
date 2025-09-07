@@ -86,6 +86,9 @@ impl<T: std::fmt::Debug> QB<T> {
     }
 
     pub fn select<'a, Out: Debug + FromRow<'a, Row>>(mut self, cols: Vec<&'static str>) -> QB<Out> {
+        if cols.is_empty() {
+            panic!("Cannot select empty column list. At least one column must be specified.");
+        }
         self.base.columns = cols;
         QB {
             base: self.base,

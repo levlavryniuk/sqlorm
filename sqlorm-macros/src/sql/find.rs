@@ -34,7 +34,7 @@ pub fn find(es: &EntityStruct) -> TokenStream {
                 `Ok(None)` if no record matches, or an `sqlx::Error` if the\n\
                 query fails.\n\n\
                 # Example\n\n\
-                ```rust\n\
+                ```ignore
                 // Find user by {}\n\
                 if let Some(user) = User::{}(&pool, value).await? {{\n\
                     println!(\"Found user: {{}}\", user.{});\n\

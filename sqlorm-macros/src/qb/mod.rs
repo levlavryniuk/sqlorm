@@ -20,7 +20,7 @@ pub fn qb(es: &EntityStruct) -> proc_macro2::TokenStream {
 
         impl #s_ident {
             pub fn query() -> sqlorm::core::QB<#s_ident> {
-                sqlorm::core::QB::new(<#s_ident as sqlorm_core::Table>::table_info())
+                sqlorm::core::QB::new(<#s_ident as sqlorm::core::Table>::table_info())
             }
         }
     }

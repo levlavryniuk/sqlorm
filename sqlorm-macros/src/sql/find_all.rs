@@ -28,7 +28,7 @@ pub fn find_all(es: &EntityStruct) -> TokenStream {
             ///
             /// # Example
             ///
-            /// ```rust
+            /// ```ignore
             /// // Get all users
             /// let all_users = User::find_all(&pool).await?;
             /// println!("Found {} users", all_users.len());

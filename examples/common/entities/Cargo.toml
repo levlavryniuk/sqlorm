@@ -14,3 +14,4 @@ uuid = { version = "1.0", features = ["v4", "serde"] }
 default = []
 postgres = ["sqlorm/postgres", "sqlx/postgres"]
 sqlite = ["sqlorm/sqlite", "sqlx/sqlite"]
+uuid = ["sqlx/uuid", "sqlorm/uuid"]

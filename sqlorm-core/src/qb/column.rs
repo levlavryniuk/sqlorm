@@ -88,6 +88,9 @@ where
     ///
     /// The number of placeholders matches the number of values provided.
     pub fn in_(self, vals: Vec<T>) -> Condition {
+        if vals.is_empty() {
+            panic!("Cannot create IN condition with empty value list. At least one value must be specified.");
+        }
         let placeholders: Vec<String> = (0..vals.len()).map(|_| "?".to_string()).collect();
         let sql = format!("{} IN ({})", self.qualified_name(), placeholders.join(", "));
         Condition::multi(sql, vals)
@@ -95,6 +98,9 @@ where
 
     /// Create a condition: `column NOT IN (?, ?, ...)`
     pub fn not_in(self, vals: Vec<T>) -> Condition {
+        if vals.is_empty() {
+            panic!("Cannot create NOT IN condition with empty value list. At least one value must be specified.");
+        }
         let placeholders: Vec<String> = (0..vals.len()).map(|_| "?".to_string()).collect();
         let sql = format!("{} NOT IN ({})", self.qualified_name(), placeholders.join(", "));
         Condition::multi(sql, vals)
