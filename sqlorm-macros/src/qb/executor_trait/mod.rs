@@ -60,7 +60,7 @@ pub fn executor_trait(es: &crate::EntityStruct) -> proc_macro2::TokenStream {
 
                     let children: Vec<#other> = #other::query()
                         .filter(#other::#foreign_key_const.eq(parent_id.clone()))
-                        .fetch_all(pool)
+                        .fetch_all(&mut conn)
                         .await?;
 
                     core.#on = Some(children);
@@ -91,7 +91,7 @@ pub fn executor_trait(es: &crate::EntityStruct) -> proc_macro2::TokenStream {
                     if !parent_ids.is_empty() {
                         let related: Vec<#other> = #other::query()
                             .filter(#other::#foreign_key_const.in_(parent_ids.clone()))
-                            .fetch_all(pool)
+                            .fetch_all(&mut conn)
                             .await?;
 
                         use std::collections::HashMap;
@@ -120,22 +120,33 @@ pub fn executor_trait(es: &crate::EntityStruct) -> proc_macro2::TokenStream {
         where
             #s_name: Send + Sync + sqlorm::core::Table + 'static,
         {
-            async fn fetch_one(self, pool: &sqlorm::core::Pool) -> sqlx::Result<#s_name>;
-            async fn fetch_optional(self, pool: &sqlorm::core::Pool) -> sqlx::Result<Option<#s_name>>;
-            async fn fetch_all(self, pool: &sqlorm::core::Pool) -> sqlx::Result<Vec<#s_name>>;
+            async fn fetch_one<'a, A>(self, acquirer: A) -> sqlx::Result<#s_name>
+            where
+                A: sqlx::Acquire<'a, Database = sqlorm::Driver>;
+            async fn fetch_optional<'a, A>(self, acquirer: A) -> sqlx::Result<Option<#s_name>>
+            where
+                A: sqlx::Acquire<'a, Database = sqlorm::Driver>;
+            async fn fetch_all<'a, A>(self, acquirer: A) -> sqlx::Result<Vec<#s_name>>
+            where
+                A: sqlx::Acquire<'a, Database = sqlorm::Driver>;
         }
 
         #[sqlorm::core::async_trait]
         impl #tident for sqlorm::core::QB<#s_name> where
     #s_name: Send + Sync + sqlorm::core::Table + 'static,{
-            async fn fetch_one(self, pool: &sqlorm::core::Pool) -> sqlx::Result<#s_name> {
+            async fn fetch_one<'a, A>(self, acquirer: A) -> sqlx::Result<#s_name>
+            where
+                A: sqlx::Acquire<'a, Database = sqlorm::Driver>,
+            {
+                let mut conn = acquirer.acquire().await?;
+
                 if self.eager.is_empty() && self.batch.is_empty() {
-                    let row = self.build_query().build().fetch_one(pool).await?;
+                    let row = self.build_query().build().fetch_one(&mut conn).await?;
                     let core:#s_name = sqlorm::core::FromAliasedRow::from_aliased_row(&row)?;
                     return Ok(core);
                 }
 
-                let row = self.build_query().build().fetch_one(pool).await?;
+                let row = self.build_query().build().fetch_one(&mut conn).await?;
                 let mut core:#s_name = sqlorm::core::FromAliasedRow::from_aliased_row(&row)?;
 
                 #(#eager)*
@@ -144,9 +155,14 @@ pub fn executor_trait(es: &crate::EntityStruct) -> proc_macro2::TokenStream {
                 Ok(core)
             }
 
-            async fn fetch_optional(self, pool: &sqlorm::core::Pool) -> sqlx::Result<Option<#s_name>> {
+            async fn fetch_optional<'a, A>(self, acquirer: A) -> sqlx::Result<Option<#s_name>>
+            where
+                A: sqlx::Acquire<'a, Database = sqlorm::Driver>,
+            {
+                let mut conn = acquirer.acquire().await?;
+
                 if self.eager.is_empty() && self.batch.is_empty() {
-                    let row = self.build_query().build().fetch_optional(pool).await?;
+                    let row = self.build_query().build().fetch_optional(&mut *conn).await?;
                     if let Some(row) = row {
                         let core:#s_name = sqlorm::core::FromAliasedRow::from_aliased_row(&row)?;
                         return Ok(Some(core));
@@ -154,7 +170,7 @@ pub fn executor_trait(es: &crate::EntityStruct) -> proc_macro2::TokenStream {
                     return Ok(None);
                 }
 
-                let row = self.build_query().build().fetch_optional(pool).await?;
+                let row = self.build_query().build().fetch_optional(&mut conn).await?;
                 if let Some(row) = row {
                     let mut core:#s_name = sqlorm::core::FromAliasedRow::from_aliased_row(&row)?;
 
@@ -167,8 +183,12 @@ pub fn executor_trait(es: &crate::EntityStruct) -> proc_macro2::TokenStream {
                 }
             }
 
-            async fn fetch_all(self, pool: &sqlorm::core::Pool) -> sqlx::Result<Vec<#s_name>> {
-                let rows = self.build_query().build().fetch_all(pool).await?;
+            async fn fetch_all<'a, A>(self, acquirer: A) -> sqlx::Result<Vec<#s_name>>
+            where
+                A: sqlx::Acquire<'a, Database = sqlorm::Driver>,
+            {
+                let mut conn = acquirer.acquire().await?;
+                let rows = self.build_query().build().fetch_all(&mut *conn).await?;
                 let mut results = Vec::new();
 
                 for row in rows {

@@ -2,14 +2,10 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use syn::Ident;
 
-use crate::{
-    entity::EntityStruct,
-    sql::{generate_single_placeholder, with_quotes},
-};
+use crate::entity::EntityStruct;
 
 pub fn find(es: &EntityStruct) -> TokenStream {
     let s_ident = &es.struct_ident;
-    let table_name = with_quotes(&es.table_name);
 
     let unique_fields: Vec<_> = es
         .fields
@@ -24,8 +20,6 @@ pub fn find(es: &EntityStruct) -> TokenStream {
             let ftype = &f.ty;
             let method_name = Ident::new(&format!("find_by_{}", fname), fname.span());
             let col_const = Ident::new(&fname.to_string().to_uppercase(), fname.span());
-            let col_name = fname.to_string();
-            let placeholder = generate_single_placeholder(1);
             let doc_string = format!(
                 "Finds a record by its {} field.\n\n\
                 This method queries the database for a single record where the {} field\n\
@@ -52,16 +46,16 @@ pub fn find(es: &EntityStruct) -> TokenStream {
 
             quote! {
                 #[doc = #doc_string]
-                pub async fn #method_name<'a, E>(
-                    executor: E,
+                pub async fn #method_name<'a, A>(
+                    acquirer: A,
                     value: #ftype
                 ) -> sqlx::Result<Option<#s_ident>>
                 where
-                    E: sqlx::Executor<'a, Database = sqlorm::Driver>
+                    A: sqlx::Acquire<'a, Database = sqlorm::Driver>
                 {
                     #s_ident::query()
                         .filter(#s_ident::#col_const.eq(value))
-                        .fetch_optional(executor)
+                        .fetch_optional(acquirer)
                         .await
                 }
             }

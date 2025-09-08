@@ -1,11 +1,10 @@
 use proc_macro2::TokenStream;
 use quote::quote;
 
-use crate::{entity::EntityStruct, sql::with_quotes};
+use crate::entity::EntityStruct;
 
 pub fn find_all(es: &EntityStruct) -> TokenStream {
     let s_ident = &es.struct_ident;
-    let table_name = with_quotes(&es.table_name);
 
     quote! {
         impl #s_ident {
@@ -47,18 +46,14 @@ pub fn find_all(es: &EntityStruct) -> TokenStream {
             ///
             /// This method loads all records into memory at once. For large datasets,
             /// consider using streaming queries or pagination techniques.
-            pub async fn find_all<'a, E>(
-                executor: E
+            pub async fn find_all<'a, A>(
+                acquirer: A
             ) -> sqlx::Result<Vec<Self>>
             where
-                E: sqlx::Executor<'a, Database = sqlorm::Driver>
+                A: sqlx::Acquire<'a, Database = sqlorm::Driver>
             {
-                let query = format!(
-                    "SELECT * FROM {table}",
-                    table = #table_name,
-                );
-                sqlx::query_as::<_, #s_ident>(&query)
-                    .fetch_all(executor)
+                #s_ident::query()
+                    .fetch_all(acquirer)
                     .await
             }
         }
