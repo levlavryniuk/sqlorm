@@ -2,7 +2,10 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use syn::Ident;
 
-use crate::{entity::EntityStruct, sql::with_quotes};
+use crate::{
+    entity::EntityStruct,
+    sql::{generate_single_placeholder, with_quotes},
+};
 
 pub fn find(es: &EntityStruct) -> TokenStream {
     let s_ident = &es.struct_ident;
@@ -20,7 +23,9 @@ pub fn find(es: &EntityStruct) -> TokenStream {
             let fname = &f.ident;
             let ftype = &f.ty;
             let method_name = Ident::new(&format!("find_by_{}", fname), fname.span());
+            let col_const = Ident::new(&fname.to_string().to_uppercase(), fname.span());
             let col_name = fname.to_string();
+            let placeholder = generate_single_placeholder(1);
             let doc_string = format!(
                 "Finds a record by its {} field.\n\n\
                 This method queries the database for a single record where the {} field\n\
@@ -54,13 +59,8 @@ pub fn find(es: &EntityStruct) -> TokenStream {
                 where
                     E: sqlx::Executor<'a, Database = sqlorm::Driver>
                 {
-                    let query = format!(
-                        "select * from {table} WHERE {col} = ?",
-                        table = #table_name,
-                        col = #col_name,
-                    );
-                    sqlx::query_as::<_, #s_ident>(&query)
-                        .bind(value)
+                    #s_ident::query()
+                        .filter(#s_ident::#col_const.eq(value))
                         .fetch_optional(executor)
                         .await
                 }

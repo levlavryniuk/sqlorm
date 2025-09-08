@@ -27,6 +27,7 @@ async fn test_user_crud_operations() {
 
     let mut updated_user = found_user;
     updated_user.username = "updated_username".to_string();
+    dbg!(&updated_user);
     updated_user = updated_user
         .save(&pool)
         .await
@@ -60,8 +61,8 @@ async fn test_insert_vs_update_behavior() {
     };
 
     new_user.save(&pool).await.expect("Failed to insert user");
-    assert!(inserted.id > 0, "Should have generated an ID");
-    assert_eq!(inserted.email, "insert@example.com");
+    assert!(new_user.id > 0, "Should have generated an ID");
+    assert_eq!(new_user.email, "insert@example.com");
 
     let mut existing_user = new_user.clone();
     existing_user.username = "updated_insert_user".to_string();
@@ -70,7 +71,7 @@ async fn test_insert_vs_update_behavior() {
         .save(&pool)
         .await
         .expect("Failed to update user");
-    assert_eq!(updated.id, inserted.id, "ID should remain the same");
+    assert_eq!(updated.id, new_user.id, "ID should remain the same");
     assert_eq!(updated.username, "updated_insert_user");
 
     let all_users = User::find_all(&pool)

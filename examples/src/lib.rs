@@ -23,20 +23,10 @@ pub async fn setup_test_db() -> Pool {
 pub async fn create_clean_db() -> Pool {
     let pool = setup_test_db().await;
 
-    sqlx::query("DELETE FROM \"donation\"")
+    sqlx::query("TRUNCATE TABLE \"donation\", \"jar\", \"user\" RESTART IDENTITY CASCADE")
         .execute(&pool)
         .await
-        .expect("Failed to clean donation table");
-
-    sqlx::query("DELETE FROM \"jar\"")
-        .execute(&pool)
-        .await
-        .expect("Failed to clean jar table");
-
-    sqlx::query("DELETE FROM \"user\"")
-        .execute(&pool)
-        .await
-        .expect("Failed to clean user table");
+        .expect("Failed to truncate tables");
 
     pool
 }
