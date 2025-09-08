@@ -1,5 +1,7 @@
 default: postgres sqlite
 
+examples: postgres sqlite
+
 postgres:
     cargo test --workspace --features postgres,uuid -- --nocapture
 

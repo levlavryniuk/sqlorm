@@ -42,7 +42,7 @@ pub struct Jar {
     pub id: i64,
     pub title: String,
     pub description: Option<String>,
-    pub minimal_donation: f32,
+    pub minimal_donation: f64,
     pub total_amount: f64,
     pub total_donations: i32,
     #[sql(unique)]

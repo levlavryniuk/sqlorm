@@ -11,7 +11,7 @@ type NotReallyUuid = String;
 async fn setup_select_test_data(pool: &sqlorm::Pool) -> (User, Jar, Donation) {
     let mut user = User::test_user("select@example.com", "selectuser");
     user.bio = Some("A test bio".to_string());
-    user = user.save(pool).await.expect("Failed to save user");
+    user.save(pool).await.expect("Failed to save user");
 
     let mut jar = Jar::test_jar(user.id, "selectjar");
     jar.title = "Select Test Jar".to_string();
@@ -132,11 +132,15 @@ async fn test_select_with_filtering() {
     let pool = create_clean_db().await;
 
     // Create multiple users
-    let mut user1 = User::test_user("select1@example.com", "select1");
-    user1 = user1.save(&pool).await.expect("Failed to save user1");
+    let user1 = User::test_user("select1@example.com", "select1")
+        .save(&pool)
+        .await
+        .expect("Failed to save user1");
 
-    let mut user2 = User::test_user("select2@example.com", "select2");
-    user2 = user2.save(&pool).await.expect("Failed to save user2");
+    let user2 = User::test_user("select2@example.com", "select2")
+        .save(&pool)
+        .await
+        .expect("Failed to save user2");
 
     // Select specific user with filtering
     let (email, username): (String, String) = User::query()

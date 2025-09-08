@@ -5,8 +5,10 @@ use sqlorm_examples::create_clean_db;
 async fn test_user_crud_operations() {
     let pool = create_clean_db().await;
 
-    let mut user = User::test_user("test@example.com", "testuser");
-    user = user.save(&pool).await.expect("Failed to save user");
+    let mut user = User::test_user("test@example.com", "testuser")
+        .save(&pool)
+        .await
+        .expect("Failed to save user");
 
     assert!(user.id > 0, "User ID should be auto-generated");
     assert_eq!(user.email, "test@example.com");
@@ -27,8 +29,7 @@ async fn test_user_crud_operations() {
 
     let mut updated_user = found_user;
     updated_user.username = "updated_username".to_string();
-    dbg!(&updated_user);
-    updated_user = updated_user
+    updated_user
         .save(&pool)
         .await
         .expect("Failed to update user");
@@ -51,16 +52,17 @@ async fn test_user_crud_operations() {
 async fn test_insert_vs_update_behavior() {
     let pool = create_clean_db().await;
 
-    let mut new_user = User {
+    let new_user = User {
         email: "insert@example.com".to_string(),
         username: "insert_user".to_string(),
         password: "secret".to_string(),
         first_name: "Insert".to_string(),
         last_name: "User".to_string(),
         ..Default::default()
-    };
-
-    new_user.save(&pool).await.expect("Failed to insert user");
+    }
+    .save(&pool)
+    .await
+    .expect("Failed to insert user");
     assert!(new_user.id > 0, "Should have generated an ID");
     assert_eq!(new_user.email, "insert@example.com");
 
@@ -84,13 +86,13 @@ async fn test_insert_vs_update_behavior() {
 async fn test_forced_insert_and_update() {
     let pool = create_clean_db().await;
 
-    let mut user = User::test_user("force@example.com", "forceuser");
-    user = user.insert(&pool).await.expect("Failed to force insert");
-    assert!(user.id > 0);
-
+    let mut user = User::test_user("force@example.com", "forceuser")
+        .insert(&pool)
+        .await
+        .expect("Failed to force insert");
     let original_username = user.username.clone();
     user.username = "force_updated".to_string();
-    user = user.update(&pool).await.expect("Failed to force update");
+    user.save(&pool).await.expect("Failed to force update");
     assert_eq!(user.username, "force_updated");
     assert_ne!(user.username, original_username);
 }
@@ -99,8 +101,10 @@ async fn test_forced_insert_and_update() {
 async fn test_jar_with_foreign_key() {
     let pool = create_clean_db().await;
 
-    let mut user = User::test_user("jarowner@example.com", "jarowner");
-    user = user.save(&pool).await.expect("Failed to save user");
+    let user = User::test_user("jarowner@example.com", "jarowner")
+        .save(&pool)
+        .await
+        .expect("Failed to save user");
 
     let mut jar = Jar::test_jar(user.id, "testjar");
     jar = jar.save(&pool).await.expect("Failed to save jar");

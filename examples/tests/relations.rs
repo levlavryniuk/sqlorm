@@ -9,11 +9,15 @@ use sqlorm_examples::create_clean_db;
 
 async fn setup_test_data(pool: &sqlorm::Pool) -> (User, User, Jar, Jar, Donation, Donation) {
     // Create users
-    let mut user1 = User::test_user("owner1@example.com", "owner1");
-    user1 = user1.save(pool).await.expect("Failed to save user1");
+let user1 = User::test_user("owner1@example.com", "owner1")
+        .save(pool)
+        .await
+        .expect("Failed to save user1");
 
-    let mut user2 = User::test_user("owner2@example.com", "owner2");
-    user2 = user2.save(pool).await.expect("Failed to save user2");
+let user2 = User::test_user("owner2@example.com", "owner2")
+        .save(pool)
+        .await
+        .expect("Failed to save user2");
 
     // Create jars
     let mut jar1 = Jar::test_jar(user1.id, "jar1");

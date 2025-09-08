@@ -2,7 +2,7 @@ CREATE TABLE "jar" (
     "id" BIGSERIAL PRIMARY KEY,
     "title" TEXT NOT NULL,
     "description" TEXT,
-    "minimal_donation" REAL NOT NULL,
+    "minimal_donation" DOUBLE PRECISION NOT NULL,
     "total_amount" DOUBLE PRECISION NOT NULL DEFAULT 0.0,
     "total_donations" INTEGER NOT NULL DEFAULT 0,
     "alias" TEXT NOT NULL UNIQUE,

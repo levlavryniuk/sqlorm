@@ -1,5 +1,6 @@
 use sqlorm::Pool;
 
+mod test_db;
 #[cfg(feature = "postgres")]
 use std::env;
 
@@ -21,13 +22,10 @@ pub async fn setup_test_db() -> Pool {
 
 #[cfg(feature = "postgres")]
 pub async fn create_clean_db() -> Pool {
-    let pool = setup_test_db().await;
-
-    sqlx::query("TRUNCATE TABLE \"donation\", \"jar\", \"user\" RESTART IDENTITY CASCADE")
-        .execute(&pool)
+    let pool = test_db::create_test_db().await;
+    migrations_helper::run_migrations(&pool)
         .await
-        .expect("Failed to truncate tables");
-
+        .expect("Failed to run migrations");
     pool
 }
 

@@ -2,7 +2,7 @@ use proc_macro2::{Span, TokenStream};
 use quote::quote;
 use syn::Ident;
 
-use crate::{EntityStruct, relations::RelationType};
+use crate::{EntityStruct, relations::RelationType, sql::generate_single_placeholder};
 
 pub fn has_many(tbl: &EntityStruct) -> TokenStream {
     let entity = &tbl.struct_ident;
@@ -21,7 +21,8 @@ pub fn has_many(tbl: &EntityStruct) -> TokenStream {
                 let pk_ident = &pk.ident;
                 let ref_table_ident = other;
 
-                let sql = format!("SELECT * FROM {} WHERE {} = ?", ref_table_ident, on_field.1);
+                let placeholder = generate_single_placeholder(1);
+                let sql = format!("SELECT * FROM {} WHERE {} = {}", ref_table_ident, on_field.1, placeholder);
 
                 Some(quote! {
                     pub async fn #fn_ident<'a, E>(
