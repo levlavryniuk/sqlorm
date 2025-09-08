@@ -51,7 +51,7 @@ pub fn find(es: &EntityStruct) -> TokenStream {
                     value: #ftype
                 ) -> sqlx::Result<Option<#s_ident>>
                 where
-                    A: sqlx::Acquire<'a, Database = sqlorm::Driver>
+                    A: Send +  sqlx::Acquire<'a, Database = sqlorm::Driver>
                 {
                     #s_ident::query()
                         .filter(#s_ident::#col_const.eq(value))

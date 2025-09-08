@@ -50,7 +50,7 @@ pub fn find_all(es: &EntityStruct) -> TokenStream {
                 acquirer: A
             ) -> sqlx::Result<Vec<Self>>
             where
-                A: sqlx::Acquire<'a, Database = sqlorm::Driver>
+                A:Send+ sqlx::Acquire<'a, Database = sqlorm::Driver>
             {
                 #s_ident::query()
                     .fetch_all(acquirer)

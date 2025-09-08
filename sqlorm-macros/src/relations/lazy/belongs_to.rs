@@ -30,9 +30,10 @@ pub fn belongs_to(tbl: &EntityStruct) -> TokenStream {
                         executor: E
                     ) -> sqlx::Result<Option<#other>>
                     where
-                        E: sqlx::Executor<'a, Database = sqlorm::Driver>
+                        E: Send + sqlx::Acquire<'a, Database = sqlorm::Driver>
                     {
-                        #other::find_by_id(executor, self.#self_field).await
+                        let mut conn = executor.acquire().await?;
+                        #other::find_by_id(&mut *conn, self.#self_field).await
                     }
                 })
             } else {
