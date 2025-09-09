@@ -1,7 +1,11 @@
 [package]
 name = "sqlorm-macros"
-version = "0.1.0"
-edition = "2024"
+description = "Macros codegen for sqlorm"
+version.workspace = true
+license.workspace = true
+edition.workspace = true
+authors.workspace = true
+repository.workspace = true
 
 [lib]
 proc-macro = true
