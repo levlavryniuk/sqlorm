@@ -1,3 +1,5 @@
+#![cfg(any(feature = "postgres", feature = "sqlite"))]
+
 pub mod qb;
 
 pub use crate::qb::TableInfo;

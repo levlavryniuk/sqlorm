@@ -29,6 +29,8 @@
 //! - `postgres`
 //! - `sqlite`
 
+#![cfg(any(feature = "postgres", feature = "mysql", feature = "sqlite"))]
+
 pub use sqlorm_core::*;
 pub use sqlorm_core::{Connection, Driver, Executor, Pool, Row};
 pub use sqlorm_macros::Entity;

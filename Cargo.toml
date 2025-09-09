@@ -61,3 +61,14 @@ pedantic = { level = "warn", priority = -1 }
 undocumented_unsafe_blocks = "deny"
 unwrap_used = "warn"
 wildcard_imports = "warn"
+
+[dev-dependencies]
+sqlx = { version = "0.8", features = [
+  "runtime-tokio-rustls",
+  "any",
+  "sqlite",
+  "mysql",
+  "postgres",
+] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+tokio-test = "0"
