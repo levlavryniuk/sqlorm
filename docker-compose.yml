@@ -1,17 +1,8 @@
-version: "3"
 services:
-  db:
-    image: postgres:latest
-    environment:
-      POSTGRES_USER: us
-      POSTGRES_PASSWORD: pa
-    ports:
-      - "5432:5432"
-
   test-db:
     image: postgres:latest
     environment:
       POSTGRES_USER: us
       POSTGRES_PASSWORD: pa
     ports:
-      - "6666:5432"
+      - "5432:5432"

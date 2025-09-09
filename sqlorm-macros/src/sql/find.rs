@@ -49,9 +49,9 @@ pub fn find(es: &EntityStruct) -> TokenStream {
                 pub async fn #method_name<'a, A>(
                     acquirer: A,
                     value: #ftype
-                ) -> sqlx::Result<Option<#s_ident>>
+                ) -> ::sqlorm::sqlx::Result<Option<#s_ident>>
                 where
-                    A: Send +  sqlx::Acquire<'a, Database = sqlorm::Driver>
+                    A: Send +  ::sqlorm::sqlx::Acquire<'a, Database = ::sqlorm::Driver>
                 {
                     #s_ident::query()
                         .filter(#s_ident::#col_const.eq(value))

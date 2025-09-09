@@ -28,9 +28,9 @@ pub fn belongs_to(tbl: &EntityStruct) -> TokenStream {
                     pub async fn #fn_ident<'a, E>(
                         &self,
                         executor: E
-                    ) -> sqlx::Result<Option<#other>>
+                    ) -> ::sqlorm::sqlx::Result<Option<#other>>
                     where
-                        E: Send + sqlx::Acquire<'a, Database = sqlorm::Driver>
+                        E: Send + ::sqlorm::sqlx::Acquire<'a, Database = ::sqlorm::Driver>
                     {
                         let mut conn = executor.acquire().await?;
                         #other::find_by_id(&mut *conn, self.#self_field).await
@@ -43,6 +43,7 @@ pub fn belongs_to(tbl: &EntityStruct) -> TokenStream {
         .collect();
 
     quote! {
+        #[automatically_derived]
         impl #entity {
         #(#belongs_to_rel)*
         }

@@ -62,6 +62,7 @@ fn is_uuid_type(ty: &Type) -> bool {
 /// ```
 pub fn save(es: &EntityStruct) -> TokenStream {
     let s_ident = &es.struct_ident;
+    dbg!(&es.table_name);
     let table_name = with_quotes(&es.table_name);
 
     let pk_field = &es.pk;
@@ -176,7 +177,7 @@ pub fn save(es: &EntityStruct) -> TokenStream {
                 /// ```
     pub async fn insert<'a, E>(&mut self, executor: E) -> sqlx::Result<Self>
     where
-        E: sqlx::Executor<'a, Database = sqlorm::Driver>,
+        E: ::sqlorm::sqlx::Executor<'a, Database = ::sqlorm::Driver>,
     {
         #(#uuid_assigns)*
         #created_assign
@@ -192,10 +193,10 @@ pub fn save(es: &EntityStruct) -> TokenStream {
         );
 
         // Build the query object
-        let mut query = sqlx::query_as::<_, #s_ident>(&query_str)
+        let mut query = ::sqlorm::sqlx::query_as::<_, #s_ident>(&query_str)
             #(.bind(&self.#insert_fields))*;
 
-                use sqlx::Execute;
+        use ::sqlorm::sqlx::Execute;
         // Debug: show the SQL string as sqlx sees it
         dbg!(query.sql());
 
@@ -230,9 +231,9 @@ pub fn save(es: &EntityStruct) -> TokenStream {
                 pub async fn update<'a, E>(
                     &mut self,
                     executor: E
-                ) -> sqlx::Result<Self>
+                ) -> ::sqlorm::sqlx::Result<Self>
                 where
-                    E: sqlx::Executor<'a, Database = sqlorm::Driver>
+                    E: ::sqlorm::sqlx::Executor<'a, Database = ::sqlorm::Driver>
                 {
                     #updated_assign_update
 
@@ -247,7 +248,7 @@ pub fn save(es: &EntityStruct) -> TokenStream {
                         where_clause = #where_placeholder,
                     );
 
-                    let saved = sqlx::query_as::<_, #s_ident>(&query)
+                    let saved = ::sqlorm::sqlx::query_as::<_, #s_ident>(&query)
                         #(.bind(&self.#non_pk_fields))*
                         .bind(&self.#pk_ident)
                         .fetch_one(executor)
@@ -292,9 +293,9 @@ pub fn save(es: &EntityStruct) -> TokenStream {
                 pub async fn save<'a, E>(
                     &mut self,
                     executor: E
-                ) -> sqlx::Result<Self>
+                ) -> ::sqlorm::sqlx::Result<Self>
                 where
-                    E: sqlx::Executor<'a, Database = sqlorm::Driver>
+                    E: ::sqlorm::sqlx::Executor<'a, Database = ::sqlorm::Driver>
                 {
                     if <#pk_type as Default>::default() == self.#pk_ident {
                         self.insert(executor).await

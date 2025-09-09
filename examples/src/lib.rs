@@ -1,4 +1,5 @@
 use sqlorm::Pool;
+use sqlorm::sqlx;
 
 mod test_db;
 #[cfg(feature = "postgres")]
@@ -7,7 +8,7 @@ use std::env;
 #[cfg(feature = "postgres")]
 pub async fn setup_test_db() -> Pool {
     let database_url = env::var("TEST_DATABASE_URL")
-        .unwrap_or_else(|_| "postgresql://us:pa@localhost:5432/test".to_string());
+        .unwrap_or_else(|_| "postgres://us:pa@localhost:5432/test".to_string());
 
     let pool = sqlx::PgPool::connect(&database_url)
         .await

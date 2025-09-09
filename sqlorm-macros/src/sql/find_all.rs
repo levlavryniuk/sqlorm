@@ -48,9 +48,9 @@ pub fn find_all(es: &EntityStruct) -> TokenStream {
             /// consider using streaming queries or pagination techniques.
             pub async fn find_all<'a, A>(
                 acquirer: A
-            ) -> sqlx::Result<Vec<Self>>
+            ) -> ::sqlorm::sqlx::Result<Vec<Self>>
             where
-                A:Send+ sqlx::Acquire<'a, Database = sqlorm::Driver>
+                A:Send+ ::sqlorm::sqlx::Acquire<'a, Database = ::sqlorm::Driver>
             {
                 #s_ident::query()
                     .fetch_all(acquirer)

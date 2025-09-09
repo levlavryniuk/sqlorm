@@ -1,5 +1,4 @@
 pub mod qb;
-use sqlx::FromRow;
 
 pub use crate::qb::TableInfo;
 pub use async_trait::async_trait;
@@ -11,6 +10,7 @@ mod traits;
 #[cfg(any(feature = "postgres", feature = "sqlite"))]
 pub use driver::{Connection, Driver, Pool, Row};
 
+use sqlx::FromRow;
 pub use traits::Executor;
 pub use traits::FromAliasedRow;
 pub use traits::Table;

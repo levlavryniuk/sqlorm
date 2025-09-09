@@ -103,7 +103,7 @@ pub fn validate_relations(rels: &[Relation], fields: &[EntityField]) -> syn::Res
             return Err(Error::new_spanned(
                 &rel.on.0,
                 format!(
-                    "You must create a field `{}` of type `{}` and mark it with #[sqlx(skip)]",
+                    "You must create a field `{}` of type `{}` and mark it with #[sql(skip)]",
                     rel.relation_name, expected_ty
                 ),
             ));

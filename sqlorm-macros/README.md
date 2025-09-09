@@ -11,4 +11,4 @@ TODO
 [ ] Renaming fields (e.g. sqlx(rename))
 [x] Add support for flexible WHERE conditions. Try to make it type safe.
 [?] Deal with prelude Relation traits exports
-[ ] Make fetches accept impl PgExecutor instead of &PgPool
+[x] Make fetches accept impl Acquire instead of &PgPool

@@ -32,7 +32,7 @@ pub fn relations_trait(es: &EntityStruct) -> proc_macro2::TokenStream {
     quote::quote! {
         pub trait #rel_ident {
             #(
-                fn #fn_idents(self) -> sqlorm::core::QB<#s_ident>;
+                fn #fn_idents(self) -> ::sqlorm::QB<#s_ident>;
             )*
         }
 
@@ -55,10 +55,10 @@ fn implementations(es: &EntityStruct, trait_name: &Ident) -> proc_macro2::TokenS
             match fetch_variant {
                 FetchVariant::Eager => {
                     quote::quote! {
-                        fn #fn_ident(self) -> sqlorm::core::QB<#s_ident> {
-                            let join_type = sqlorm::core::JoinType::Left;
-                            let foreign_table = <#other as sqlorm::core::Table>::table_info();
-                            let spec = sqlorm::core::JoinSpec {
+                        fn #fn_ident(self) -> ::sqlorm::QB<#s_ident> {
+                            let join_type = ::sqlorm::JoinType::Left;
+                            let foreign_table = <#other as ::sqlorm::Table>::table_info();
+                            let spec = ::sqlorm::JoinSpec {
                                 relation_name: #relation_name,
                                 join_type,
                                 foreign_table,
@@ -70,10 +70,10 @@ fn implementations(es: &EntityStruct, trait_name: &Ident) -> proc_macro2::TokenS
                 }
                 FetchVariant::Batch => {
                     quote::quote! {
-                        fn #fn_ident(self) -> sqlorm::core::QB<#s_ident> {
-                            let join_type = sqlorm::core::JoinType::Left;
-                            let foreign_table = <#other as sqlorm::core::Table>::table_info();
-                            let spec = sqlorm::core::JoinSpec {
+                        fn #fn_ident(self) -> ::sqlorm::QB<#s_ident> {
+                            let join_type = ::sqlorm::JoinType::Left;
+                            let foreign_table = <#other as ::sqlorm::Table>::table_info();
+                            let spec = ::sqlorm::JoinSpec {
                                 relation_name: #relation_name,
                                 join_type,
                                 foreign_table,
@@ -88,7 +88,8 @@ fn implementations(es: &EntityStruct, trait_name: &Ident) -> proc_macro2::TokenS
         .collect();
 
     quote::quote! {
-        impl #trait_name for sqlorm::core::QB<#s_ident> {
+        #[automatically_derived]
+        impl #trait_name for ::sqlorm::QB<#s_ident> {
             #(#fns)*
         }
     }

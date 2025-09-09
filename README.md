@@ -7,7 +7,7 @@ A modular, type-safe SQL ORM for Rust with procedural macro-based entity generat
 SQLOrm is split into three main crates:
 
 - **`sqlorm`**: The main crate that users depend on
-- **`sqlorm-core`**: Core traits and query builder implementation  
+- **`sqlorm-core`**: Core traits and query builder implementation
 - **`sqlorm-macros`**: Procedural macros for entity generation
 
 ## Database Support
@@ -42,15 +42,15 @@ use chrono::{DateTime, Utc};
 pub struct User {
     #[sql(pk)]
     pub id: i64,
-    
+
     #[sql(unique)]
     pub email: String,
-    
+
     pub name: String,
-    
+
     #[sql(timestamp = "created_at")]
     pub created_at: DateTime<Utc>,
-    
+
     #[sql(timestamp = "updated_at")]
     pub updated_at: DateTime<Utc>,
 }
@@ -111,7 +111,7 @@ just all                   # All tests including examples
 # Build with PostgreSQL driver
 cargo build --features postgres
 
-# Build with SQLite driver  
+# Build with SQLite driver
 cargo build --features sqlite
 
 # Run tests
@@ -150,6 +150,7 @@ just examples-relations    # Relationships
 ### Running PostgreSQL Examples
 
 #### With Just (Recommended)
+
 ```bash
 # Run all PostgreSQL examples
 just examples-postgres
@@ -168,6 +169,7 @@ just examples-postgres-verbose
 ```
 
 #### With Cargo Directly
+
 ```bash
 # Set up a PostgreSQL test database (optional)
 export TEST_DATABASE_URL="postgresql://user:password@localhost/test_db"
@@ -185,13 +187,14 @@ cargo test -p sqlorm-postgres-example --features postgres --test select
 ### Running SQLite Examples
 
 #### With Just (Recommended)
+
 ```bash
 # Run all SQLite examples (no setup required)
 just examples-sqlite
 
 # Run specific test suites
 just examples-sqlite-suite crud
-just examples-sqlite-suite filters  
+just examples-sqlite-suite filters
 just examples-sqlite-suite relations
 just examples-sqlite-suite select
 
@@ -200,13 +203,14 @@ just examples-sqlite-verbose
 ```
 
 #### With Cargo Directly
+
 ```bash
 # Run SQLite example tests (no setup required)
 cargo test -p sqlorm-sqlite-example --features sqlite
 
 # Run specific test suites
 cargo test -p sqlorm-sqlite-example --features sqlite --test crud
-cargo test -p sqlorm-sqlite-example --features sqlite --test filters  
+cargo test -p sqlorm-sqlite-example --features sqlite --test filters
 cargo test -p sqlorm-sqlite-example --features sqlite --test relations
 cargo test -p sqlorm-sqlite-example --features sqlite --test select
 ```
@@ -216,7 +220,7 @@ cargo test -p sqlorm-sqlite-example --features sqlite --test select
 The examples are organized as follows:
 
 - `examples/common/entities/` - Shared entity definitions (User, Jar, Donation)
-- `examples/common/migrations/` - Database migrations 
+- `examples/common/migrations/` - Database migrations
 - `examples/common/migrations-helper/` - Migration runner utility
 - `examples/postgres/` - PostgreSQL-specific example tests
 - `examples/sqlite/` - SQLite-specific example tests
@@ -224,34 +228,38 @@ The examples are organized as follows:
 Each example crate includes tests for:
 
 - **CRUD Operations** (`crud.rs`) - Create, read, update, delete operations
-- **Query Filters** (`filters.rs`) - All query builder filter operations  
+- **Query Filters** (`filters.rs`) - All query builder filter operations
 - **Relationships** (`relations.rs`) - Lazy and eager loading of related entities
 - **Custom Selects** (`select.rs`) - Column projection and custom result mapping
 
 ## Features Demonstrated
 
 ### Entity Generation
+
 - Primary keys with `#[sql(pk)]`
 - Unique fields with `#[sql(unique)]` (generates `find_by_*` methods)
 - Automatic timestamps with `#[sql(timestamp = "created_at|updated_at")]`
 - Table name customization with `#[table_name(name = "...")]`
 
 ### Query Builder
+
 - Comparison operators: `eq`, `ne`, `gt`, `ge`, `lt`, `le`
-- Pattern matching: `like`  
+- Pattern matching: `like`
 - Set operations: `in_`, `not_in`
 - Null checks: `is_null`, `is_not_null`
 - Range queries: `between`, `not_between`
 - Multiple filters with AND logic
 
 ### Relationships
+
 - `belongs_to` - Load parent entities
 - `has_many` - Load child entity collections
-- `has_one` - Load single related entities  
+- `has_one` - Load single related entities
 - Lazy loading via instance methods
 - Eager loading via query builder `.with_*()` methods
 
 ### Custom Queries
+
 - Column selection with `.select()`
 - Result mapping to tuples and custom types
 - Combining filters with custom selects
@@ -267,7 +275,7 @@ For detailed API documentation, see the individual crate docs:
 ## Development Guidelines
 
 - Use `expect()` instead of `unwrap()` for error handling
-- Document public APIs with rustdoc (`///`) 
+- Document public APIs with rustdoc (`///`)
 - No inline comments (`//`) - use rustdoc for documentation
 - Follow clippy pedantic lints
 - Test with both PostgreSQL and SQLite drivers

@@ -1,5 +1,5 @@
 use sqlorm::Pool;
-use sqlx::Executor;
+use sqlorm::sqlx::Executor;
 use uuid::Uuid;
 
 pub async fn create_test_db() -> Pool {

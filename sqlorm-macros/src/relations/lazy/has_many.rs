@@ -22,17 +22,20 @@ pub fn has_many(tbl: &EntityStruct) -> TokenStream {
                 let ref_table_ident = other;
 
                 let placeholder = generate_single_placeholder(1);
-                let sql = format!("SELECT * FROM {} WHERE {} = {}", ref_table_ident, on_field.1, placeholder);
+                let sql = format!(
+                    "SELECT * FROM {} WHERE {} = {}",
+                    ref_table_ident, on_field.1, placeholder
+                );
 
                 Some(quote! {
                     pub async fn #fn_ident<'a, E>(
                         &self,
                         executor: E
-                    ) -> Result<Vec<#ref_table_ident>, sqlx::Error>
+                    ) -> ::sqlorm::sqlx::Result<Vec<#ref_table_ident>>
                     where
-                        E: sqlx::Executor<'a, Database = sqlorm::Driver>
+                        E: ::sqlorm::sqlx::Executor<'a, Database = sqlorm::Driver>
                     {
-                        let rows = sqlx::query_as::<_, #ref_table_ident>(#sql)
+                        let rows = ::sqlorm::sqlx::query_as::<_, #ref_table_ident>(#sql)
                             .bind(&self.#pk_ident)
                             .fetch_all(executor)
                             .await?;
@@ -46,6 +49,7 @@ pub fn has_many(tbl: &EntityStruct) -> TokenStream {
         .collect();
 
     quote! {
+        #[automatically_derived]
         impl #entity {
             #(#has_many_rel)*
         }

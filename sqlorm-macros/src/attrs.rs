@@ -46,6 +46,9 @@ pub fn parse_entity_field(field: &Field) -> Result<EntityField> {
                     "unique" => {
                         kind = FieldKind::Regular { unique: true };
                     }
+                    "skip" => {
+                        kind = FieldKind::Ignored;
+                    }
                     "pk" => {
                         kind = FieldKind::PrimaryKey;
                     }
@@ -65,22 +68,6 @@ pub fn parse_entity_field(field: &Field) -> Result<EntityField> {
                         relations.push(relation);
                     }
                     _ => return Err(meta.error("unrecognized sql modifier")),
-                }
-                Ok(())
-            })?;
-        } else if attr.path().is_ident("sqlx") {
-            attr.parse_nested_meta(|meta| {
-                let ident = meta
-                    .path
-                    .get_ident()
-                    .map(|i| i.to_string())
-                    .ok_or_else(|| meta.error("expected identifier"))?;
-
-                match ident.as_str() {
-                    "skip" => {
-                        kind = FieldKind::Ignored;
-                    }
-                    _ => return Err(meta.error("unrecognized sqlx modifier")),
                 }
                 Ok(())
             })?;

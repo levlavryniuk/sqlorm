@@ -11,11 +11,11 @@ pub fn from_aliased_row(es: &EntityStruct) -> proc_macro2::TokenStream {
     let col_names: Vec<_> = fields.iter().map(|f| f.ident.to_string()).collect();
 
     quote! {
-        impl sqlorm::core::FromAliasedRow for #name {
+        impl ::sqlorm::FromAliasedRow for #name {
             fn from_aliased_row(
-                row: &sqlorm::Row,
-            ) -> sqlx::Result<Self> where Self: Sized+Default {
-                use sqlx::Row;
+                row: &::sqlorm::Row,
+            ) -> ::sqlorm::sqlx::Result<Self> where Self: Sized+Default {
+                use ::sqlorm::sqlx::Row;
                 Ok(Self {
                     #(
                         #field_idents: row.try_get::<#field_types, &str>(&format!("{}{}", #alias, #col_names))?

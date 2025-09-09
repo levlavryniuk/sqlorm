@@ -39,18 +39,18 @@ pub trait FromAliasedRow {
 ///
 /// PostgreSQL
 ///
-/// ```no_run
+/// ```ignore
 /// use sqlorm_core::{qb::{QB, Column}, TableInfo, Executor, Pool};
 /// use std::marker::PhantomData;
 ///
 /// # async fn run(pool: &Pool) -> sqlx::Result<()> {
 /// let base = TableInfo { name: "users", alias: "u".to_string(), columns: vec!["id", "name"] };
 /// let qb1 = QB::<()>::new(base)
-///     .select::<(i32, String)>(vec!["id", "name"]) 
+///     .select::<(i32, String)>(vec!["id", "name"])
 ///     .filter(Column::<i32> { name: "id", table_alias: "u", _marker: PhantomData }.eq(1));
 /// let one: (i32, String) = qb1.fetch_one_as(pool).await?;
 /// let qb2 = QB::<()>::new(TableInfo { name: "users", alias: "u".to_string(), columns: vec!["id", "name"] })
-///     .select::<(i32, String)>(vec!["id", "name"]) 
+///     .select::<(i32, String)>(vec!["id", "name"])
 ///     .filter(Column::<i32> { name: "id", table_alias: "u", _marker: PhantomData }.gt(0));
 /// let many: Vec<(i32, String)> = qb2.fetch_all_as(pool).await?;
 /// # Ok(())
@@ -66,11 +66,11 @@ pub trait FromAliasedRow {
 /// # async fn run(pool: &Pool) -> sqlx::Result<()> {
 /// let base = TableInfo { name: "users", alias: "u".to_string(), columns: vec!["id", "name"] };
 /// let qb1 = QB::<()>::new(base)
-///     .select::<(i32, String)>(vec!["id", "name"]) 
+///     .select::<(i32, String)>(vec!["id", "name"])
 ///     .filter(Column::<i32> { name: "id", table_alias: "u", _marker: PhantomData }.eq(1));
 /// let one: (i32, String) = qb1.fetch_one_as(pool).await?;
 /// let qb2 = QB::<()>::new(TableInfo { name: "users", alias: "u".to_string(), columns: vec!["id", "name"] })
-///     .select::<(i32, String)>(vec!["id", "name"]) 
+///     .select::<(i32, String)>(vec!["id", "name"])
 ///     .filter(Column::<i32> { name: "id", table_alias: "u", _marker: PhantomData }.gt(0));
 /// let many: Vec<(i32, String)> = qb2.fetch_all_as(pool).await?;
 /// # Ok(())

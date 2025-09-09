@@ -32,7 +32,7 @@ pub fn executor_trait(es: &crate::EntityStruct) -> proc_macro2::TokenStream {
             let on = Ident::new(r_name, other.span());
             Some(quote::quote! {
                 if let Some(relation) = self.eager.iter().find(|rel| rel.relation_name == #r_name) {
-                    let related_entity: #other = sqlorm::core::FromAliasedRow::from_aliased_row(&row)?;
+                    let related_entity: #other = ::sqlorm::FromAliasedRow::from_aliased_row(&row)?;
                     core.#on = Some(related_entity);
                 }
             })
@@ -115,39 +115,40 @@ pub fn executor_trait(es: &crate::EntityStruct) -> proc_macro2::TokenStream {
         .collect();
 
     quote::quote! {
-        #[sqlorm::core::async_trait]
+        #[::sqlorm::async_trait]
         pub trait #tident
         where
-            #s_name: Send + Sync + sqlorm::core::Table + 'static,
+            #s_name: Send + Sync + ::sqlorm::Table + 'static,
         {
-            async fn fetch_one<'a, A>(self, acquirer: A) -> sqlx::Result<#s_name>
+            async fn fetch_one<'a, A>(self, acquirer: A) -> ::sqlorm::sqlx::Result<#s_name>
             where
-                A: Send + sqlx::Acquire<'a, Database = sqlorm::Driver>;
-            async fn fetch_optional<'a, A>(self, acquirer: A) -> sqlx::Result<Option<#s_name>>
+                A: Send + ::sqlorm::sqlx::Acquire<'a, Database =::sqlorm::Driver>;
+            async fn fetch_optional<'a, A>(self, acquirer: A) -> ::sqlorm::sqlx::Result<Option<#s_name>>
             where
-                A: Send + sqlx::Acquire<'a, Database = sqlorm::Driver>;
-            async fn fetch_all<'a, A>(self, acquirer: A) -> sqlx::Result<Vec<#s_name>>
+                A: Send + ::sqlorm::sqlx::Acquire<'a, Database =::sqlorm::Driver>;
+            async fn fetch_all<'a, A>(self, acquirer: A) -> ::sqlorm::sqlx::Result<Vec<#s_name>>
             where
-                A: Send + sqlx::Acquire<'a, Database = sqlorm::Driver>;
+                A: Send + ::sqlorm::sqlx::Acquire<'a, Database =::sqlorm::Driver>;
         }
 
-        #[sqlorm::core::async_trait]
-        impl #tident for sqlorm::core::QB<#s_name> where
-    #s_name: Send + Sync + sqlorm::core::Table + 'static,{
-            async fn fetch_one<'a, A>(self, acquirer: A) -> sqlx::Result<#s_name>
+        #[automatically_derived]
+        #[::sqlorm::async_trait]
+        impl #tident for ::sqlorm::QB<#s_name> where
+    #s_name: Send + Sync + ::sqlorm::Table + 'static,{
+            async fn fetch_one<'a, A>(self, acquirer: A) -> ::sqlorm::sqlx::Result<#s_name>
             where
-                A: Send + sqlx::Acquire<'a, Database = sqlorm::Driver>,
+                A: Send + ::sqlorm::sqlx::Acquire<'a, Database =::sqlorm::Driver>,
             {
                 let mut conn = acquirer.acquire().await?;
 
                 if self.eager.is_empty() && self.batch.is_empty() {
                     let row = self.build_query().build().fetch_one(&mut *conn).await?;
-                    let core:#s_name = sqlorm::core::FromAliasedRow::from_aliased_row(&row)?;
+                    let core:#s_name = ::sqlorm::FromAliasedRow::from_aliased_row(&row)?;
                     return Ok(core);
                 }
 
                 let row = self.build_query().build().fetch_one(&mut *conn).await?;
-                let mut core:#s_name = sqlorm::core::FromAliasedRow::from_aliased_row(&row)?;
+                let mut core:#s_name = ::sqlorm::FromAliasedRow::from_aliased_row(&row)?;
 
                 #(#eager)*
                 #(#batch_one)*
@@ -155,16 +156,16 @@ pub fn executor_trait(es: &crate::EntityStruct) -> proc_macro2::TokenStream {
                 Ok(core)
             }
 
-            async fn fetch_optional<'a, A>(self, acquirer: A) -> sqlx::Result<Option<#s_name>>
+            async fn fetch_optional<'a, A>(self, acquirer: A) -> ::sqlorm::sqlx::Result<Option<#s_name>>
             where
-                A: Send + sqlx::Acquire<'a, Database = sqlorm::Driver>,
+                A: Send + ::sqlorm::sqlx::Acquire<'a, Database =::sqlorm::Driver>,
             {
                 let mut conn = acquirer.acquire().await?;
 
                 if self.eager.is_empty() && self.batch.is_empty() {
                     let row = self.build_query().build().fetch_optional(&mut *conn).await?;
                     if let Some(row) = row {
-                        let core:#s_name = sqlorm::core::FromAliasedRow::from_aliased_row(&row)?;
+                        let core:#s_name = ::sqlorm::FromAliasedRow::from_aliased_row(&row)?;
                         return Ok(Some(core));
                     }
                     return Ok(None);
@@ -172,7 +173,7 @@ pub fn executor_trait(es: &crate::EntityStruct) -> proc_macro2::TokenStream {
 
                 let row = self.build_query().build().fetch_optional(&mut *conn).await?;
                 if let Some(row) = row {
-                    let mut core:#s_name = sqlorm::core::FromAliasedRow::from_aliased_row(&row)?;
+                    let mut core:#s_name = ::sqlorm::FromAliasedRow::from_aliased_row(&row)?;
 
                     #(#eager)*
                     #(#batch_one)*
@@ -183,16 +184,16 @@ pub fn executor_trait(es: &crate::EntityStruct) -> proc_macro2::TokenStream {
                 }
             }
 
-            async fn fetch_all<'a, A>(self, acquirer: A) -> sqlx::Result<Vec<#s_name>>
+            async fn fetch_all<'a, A>(self, acquirer: A) -> ::sqlorm::sqlx::Result<Vec<#s_name>>
             where
-                A: Send + sqlx::Acquire<'a, Database = sqlorm::Driver>,
+                A: Send + ::sqlorm::sqlx::Acquire<'a, Database =::sqlorm::Driver>,
             {
                 let mut conn = acquirer.acquire().await?;
                 let rows = self.build_query().build().fetch_all(&mut *conn).await?;
                 let mut results = Vec::new();
 
                 for row in rows {
-                    let mut core: #s_name = sqlorm::core::FromAliasedRow::from_aliased_row(&row)?;
+                    let mut core: #s_name = ::sqlorm::FromAliasedRow::from_aliased_row(&row)?;
                     #(#eager)*
                     results.push(core);
                 }

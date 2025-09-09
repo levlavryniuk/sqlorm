@@ -29,8 +29,8 @@ pub fn handle(entity: &EntityStruct) -> TokenStream {
 
             #(
                 /// Column reference for the `#field_names` field.
-                pub const #const_idents: sqlorm::core::Column<#field_ty> =
-                    sqlorm::core::Column { name: #field_names, table_alias: #table_alias, _marker: std::marker::PhantomData };
+                pub const #const_idents: sqlorm::Column<#field_ty> =
+                    sqlorm::Column { name: #field_names, table_alias: #table_alias, _marker: std::marker::PhantomData };
             )*
         }
     }

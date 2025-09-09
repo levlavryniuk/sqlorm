@@ -1,3 +1,4 @@
+use entities::DonationExecutor;
 use entities::JarExecutor;
 use entities::UserExecutor;
 use entities::{Jar, User};

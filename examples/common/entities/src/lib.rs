@@ -1,11 +1,12 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use sqlorm::sqlx::FromRow;
 use sqlorm::Entity;
+use sqlorm::prelude::*;
+use sqlorm::table;
 use uuid::Uuid;
 
-#[derive(Debug, Entity, FromRow, Clone, Serialize, Deserialize, Default)]
-#[table_name(name = "user")]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[table(name = "user")]
 pub struct User {
     #[sql(pk)]
     #[sql(relation(has_many -> Jar, relation = "jars", on = owner_id))]
@@ -19,10 +20,12 @@ pub struct User {
     pub username: String,
     pub first_name: String,
     pub last_name: String,
+    #[sql(skip)]
     #[sqlx(skip)]
     pub jars: Option<Vec<Jar>>,
     pub wallpaper_url: Option<String>,
     pub avatar_url: Option<String>,
+    #[sql(skip)]
     #[sqlx(skip)]
     pub payed_donations: Option<Vec<Donation>>,
     pub bio: Option<String>,
@@ -34,8 +37,8 @@ pub struct User {
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
-#[derive(Debug, Default, Entity, Clone, FromRow, Serialize, Deserialize)]
-#[table_name(name = "jar")]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[table(name = "jar")]
 pub struct Jar {
     #[sql(pk)]
     #[sql(relation(has_many -> Donation, relation = "donations", on = jar_id))]
@@ -51,9 +54,11 @@ pub struct Jar {
     pub goal: Option<f64>,
     #[sql(relation(belongs_to -> User, relation = "owner", on = id))]
     pub owner_id: i64,
+    #[sql(skip)]
     #[sqlx(skip)]
     pub owner: Option<User>,
 
+    #[sql(skip)]
     #[sqlx(skip)]
     pub donations: Option<Vec<Donation>>,
 
@@ -65,8 +70,8 @@ pub struct Jar {
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
-#[derive(Debug, Entity, Default, FromRow, Clone, Serialize, Deserialize)]
-#[table_name(name = "donation")]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[table(name = "donation")]
 pub struct Donation {
     #[sql(pk)]
     pub id: Uuid,
@@ -75,11 +80,13 @@ pub struct Donation {
 
     #[sql(relation(belongs_to -> Jar, relation = "jar", on = id))]
     pub jar_id: i64,
+    #[sql(skip)]
     #[sqlx(skip)]
     pub jar: Option<Jar>,
 
     #[sql(relation(belongs_to -> User, relation = "payer", on = id))]
     pub payer_id: i64,
+    #[sql(skip)]
     #[sqlx(skip)]
     pub payer: Option<User>,
 

@@ -14,7 +14,7 @@ use crate::{
 };
 
 /// Represents a single field in an entity struct during macro processing.
-/// 
+///
 /// Contains all the metadata needed to generate appropriate SQL methods and
 /// query builder integration for the field.
 #[derive(Debug, Clone)]
@@ -30,7 +30,7 @@ pub struct EntityField {
 }
 
 /// Categorizes the semantic meaning of an entity field for code generation.
-/// 
+///
 /// This determines what kind of special handling the field receives in generated methods.
 #[derive(Debug, Clone)]
 pub enum FieldKind {
@@ -38,17 +38,17 @@ pub enum FieldKind {
     PrimaryKey,
     /// Timestamp field with automatic management
     Timestamp(TimestampKind),
-    /// Field excluded from SQL operations via `#[sqlx(skip)]`
+    /// Field excluded from SQL operations via `#[sql(skip)]`
     Ignored,
     /// Regular database field
-    Regular { 
+    Regular {
         /// Whether the field is unique (generates `find_by_*` methods)
-        unique: bool 
+        unique: bool,
     },
 }
 
 /// Specifies the type of automatic timestamp management.
-/// 
+///
 /// Used with `#[sql(timestamp = "...")]` attributes.
 #[derive(Debug, Clone)]
 pub enum TimestampKind {
@@ -61,7 +61,7 @@ pub enum TimestampKind {
 }
 
 /// Complete representation of an entity struct during macro processing.
-/// 
+///
 /// Contains all information needed to generate the full set of database methods,
 /// query builder integration, and relationship handling.
 #[derive(Debug)]
@@ -82,17 +82,17 @@ impl Parse for EntityStruct {
     fn parse(input: ParseStream) -> Result<Self> {
         let derive_input: DeriveInput = input.parse()?;
         let struct_ident = derive_input.ident.clone();
-        let mut table_name = struct_ident.to_string().to_lowercase() + "s";
+        let mut table_name = struct_ident.to_string().to_lowercase();
 
         for attr in &derive_input.attrs {
-            if attr.path().is_ident("table_name") {
+            if attr.path().is_ident("table") {
                 attr.parse_nested_meta(|meta| {
                     if meta.path.is_ident("name") {
                         let lit: syn::LitStr = meta.value()?.parse()?;
                         table_name = lit.value();
                         return Ok(());
                     }
-                    Err(meta.error("unrecognized table_name attribute"))
+                    Err(meta.error("unrecognized table attribute"))
                 })?;
             }
         }
@@ -189,7 +189,7 @@ impl EntityField {
     }
 
     /// Returns true if this field is unique (either primary key or marked as unique).
-    /// 
+    ///
     /// Unique fields generate `find_by_*` methods.
     pub fn is_unique(&self) -> bool {
         match self.kind {
@@ -200,7 +200,7 @@ impl EntityField {
     }
 
     /// Returns true if this field should be ignored in SQL operations.
-    /// 
+    ///
     /// Ignored fields are typically used for computed properties or relationships
     /// that are loaded separately.
     pub fn is_ignored(&self) -> bool {
