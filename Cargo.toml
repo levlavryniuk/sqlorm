@@ -1,7 +1,22 @@
+[workspace.package]
+version = "0.2.0"
+license = "Apache-2.0"
+edition = "2024"
+exclude = ["/.github", "/tests"]
+authors = ["Lev Lavryniuk <levlavryniuk@gmail.com>"]
+keywords = ["sqlx", "postgres", "orm", "sqlite", "database", "backend"]
+repository = "https://github.com/levlavryniuk/sqlorm"
+
 [package]
 name = "sqlorm"
-version = "0.1.0"
-edition = "2024"
+version.workspace = true
+license.workspace = true
+edition.workspace = true
+authors.workspace = true
+repository.workspace = true
+description = "An ergonomic and type-safe ORM for database interactions"
+readme = "README.md"
+documentation = "https://docs.rs/sqlorm"
 
 [workspace]
 members = [

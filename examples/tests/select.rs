@@ -9,9 +9,9 @@ type NotReallyUuid = uuid::Uuid;
 type NotReallyUuid = String;
 
 async fn setup_select_test_data(pool: &sqlorm::Pool) -> (User, Jar, Donation) {
-    let mut user = User::test_user("select@example.com", "selectuser");
+let mut user = User::test_user("select@example.com", "selectuser");
     user.bio = Some("A test bio".to_string());
-    user.save(pool).await.expect("Failed to save user");
+    let user = user.save(pool).await.expect("Failed to save user");
 
     let mut jar = Jar::test_jar(user.id, "selectjar");
     jar.title = "Select Test Jar".to_string();

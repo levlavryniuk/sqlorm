@@ -5,7 +5,7 @@ use sqlorm_examples::create_clean_db;
 async fn test_user_crud_operations() {
     let pool = create_clean_db().await;
 
-    let mut user = User::test_user("test@example.com", "testuser")
+    let user = User::test_user("test@example.com", "testuser")
         .save(&pool)
         .await
         .expect("Failed to save user");
@@ -29,7 +29,7 @@ async fn test_user_crud_operations() {
 
     let mut updated_user = found_user;
     updated_user.username = "updated_username".to_string();
-    updated_user
+    let updated_user = updated_user
         .save(&pool)
         .await
         .expect("Failed to update user");
@@ -86,13 +86,14 @@ async fn test_insert_vs_update_behavior() {
 async fn test_forced_insert_and_update() {
     let pool = create_clean_db().await;
 
-    let mut user = User::test_user("force@example.com", "forceuser")
+    let user = User::test_user("force@example.com", "forceuser")
         .insert(&pool)
         .await
         .expect("Failed to force insert");
     let original_username = user.username.clone();
-    user.username = "force_updated".to_string();
-    user.save(&pool).await.expect("Failed to force update");
+    let mut user_to_update = user;
+    user_to_update.username = "force_updated".to_string();
+    let user = user_to_update.update(&pool).await.expect("Failed to force update");
     assert_eq!(user.username, "force_updated");
     assert_ne!(user.username, original_username);
 }
@@ -106,8 +107,10 @@ async fn test_jar_with_foreign_key() {
         .await
         .expect("Failed to save user");
 
-    let mut jar = Jar::test_jar(user.id, "testjar");
-    jar = jar.save(&pool).await.expect("Failed to save jar");
+    let jar = Jar::test_jar(user.id, "testjar")
+        .save(&pool)
+        .await
+        .expect("Failed to save jar");
 
     assert!(jar.id > 0);
     assert_eq!(&jar.owner_id, &user.id);
@@ -124,14 +127,20 @@ async fn test_jar_with_foreign_key() {
 async fn test_donation_with_uuid_primary_key() {
     let pool = create_clean_db().await;
 
-    let mut user = User::test_user("donor@example.com", "donor");
-    user = user.save(&pool).await.expect("Failed to save user");
+    let user = User::test_user("donor@example.com", "donor")
+        .save(&pool)
+        .await
+        .expect("Failed to save user");
 
-    let mut jar = Jar::test_jar(user.id, "donationjar");
-    jar = jar.save(&pool).await.expect("Failed to save jar");
+    let jar = Jar::test_jar(user.id, "donationjar")
+        .save(&pool)
+        .await
+        .expect("Failed to save jar");
 
-    let mut donation = Donation::test_donation(jar.id, user.id, 50.0);
-    donation = donation.save(&pool).await.expect("Failed to save donation");
+    let donation = Donation::test_donation(jar.id, user.id, 50.0)
+        .save(&pool)
+        .await
+        .expect("Failed to save donation");
 
     assert_ne!(
         donation.id.to_string(),
