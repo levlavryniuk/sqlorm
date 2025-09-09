@@ -21,6 +21,7 @@ documentation = "https://docs.rs/sqlorm"
 [workspace]
 members = [
   "sqlorm-core",
+  ".",
   "sqlorm-macros",
   "examples/common/entities",
   "examples/common/migrations-helper",
