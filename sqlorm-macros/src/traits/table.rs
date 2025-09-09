@@ -16,6 +16,7 @@ pub fn table(es: &EntityStruct) -> TokenStream {
     let field_names: Vec<String> = fields.iter().map(|f| f.ident.to_string()).collect();
 
     quote! {
+        #[automatically_derived]
         impl ::sqlorm::Table for #struct_ident {
             const TABLE_NAME: &'static str = #table_name;
             const PK: &'static str = #pk_name;

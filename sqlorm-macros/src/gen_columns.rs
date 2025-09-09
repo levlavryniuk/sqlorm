@@ -23,6 +23,7 @@ pub fn handle(entity: &EntityStruct) -> TokenStream {
         .collect();
 
     quote! {
+        #[automatically_derived]
         impl #struct_ident {
             /// All column names of this entity in declaration order.
             pub const COLUMNS: [&'static str; #field_count] = [#(#field_names),*];

@@ -11,6 +11,7 @@ pub fn from_aliased_row(es: &EntityStruct) -> proc_macro2::TokenStream {
     let col_names: Vec<_> = fields.iter().map(|f| f.ident.to_string()).collect();
 
     quote! {
+        #[automatically_derived]
         impl ::sqlorm::FromAliasedRow for #name {
             fn from_aliased_row(
                 row: &::sqlorm::Row,

@@ -63,6 +63,7 @@ pub fn find(es: &EntityStruct) -> TokenStream {
         .collect();
 
     quote! {
+        #[automatically_derived]
         impl #s_ident {
             #(#methods)*
         }

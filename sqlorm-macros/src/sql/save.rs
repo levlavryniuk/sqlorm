@@ -142,6 +142,7 @@ pub fn save(es: &EntityStruct) -> TokenStream {
         .collect();
 
     quote! {
+        #[automatically_derived]
         impl #s_ident {
             /// Inserts a new record into the database.
             ///

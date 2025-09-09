@@ -7,6 +7,7 @@ pub fn find_all(es: &EntityStruct) -> TokenStream {
     let s_ident = &es.struct_ident;
 
     quote! {
+        #[automatically_derived]
         impl #s_ident {
             /// Retrieves all records from the database table.
             ///
