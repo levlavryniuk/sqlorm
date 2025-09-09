@@ -2,7 +2,7 @@
 version = "0.2.0"
 license = "Apache-2.0"
 edition = "2024"
-exclude = ["/.github", "/tests"]
+exclude = ["/.github", "/examples", "/tests"]
 authors = ["Lev Lavryniuk <levlavryniuk@gmail.com>"]
 keywords = ["sqlx", "postgres", "orm", "sqlite", "database", "backend"]
 repository = "https://github.com/levlavryniuk/sqlorm"
