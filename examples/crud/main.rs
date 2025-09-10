@@ -192,7 +192,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .expect("Alice should exist");
     println!("🔍 Found Alice by ID: {}", found_alice.username);
 
-    // Find by unique field  
+    // Find by unique field
     let found_by_email = User::find_by_email(&pool, "bob@example.com".to_string())
         .await?
         .expect("Bob should exist");
@@ -219,7 +219,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let user_summaries: Vec<(String, String, Option<String>)> = User::query()
         .select(vec![
             User::USERNAME.as_ref(),
-            User::EMAIL.as_ref(), 
+            User::EMAIL.as_ref(),
             User::BIO.as_ref(),
         ])
         .fetch_all_as(&pool)
@@ -227,10 +227,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("📋 User summaries:");
     for (username, email, bio) in user_summaries {
-        println!("  - {}: {} ({})", username, email, bio.unwrap_or_else(|| "No bio".to_string()));
+        println!(
+            "  - {}: {} ({})",
+            username,
+            email,
+            bio.unwrap_or_else(|| "No bio".to_string())
+        );
     }
 
-    let total_users = User::find_all(&pool).await?.len();
+    let total_users = User::query().fetch_all(&pool).await?.len();
     let total_donations = Donation::query().fetch_all(&pool).await?.len();
 
     println!("\\n📊 Database Summary:");

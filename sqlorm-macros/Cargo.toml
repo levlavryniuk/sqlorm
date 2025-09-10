@@ -13,9 +13,10 @@ proc-macro = true
 
 [features]
 default = []
+sqlite = ["sqlorm-core/sqlite"]
+extra-traits = []
 uuid = ["sqlorm-core/uuid"]
 postgres = ["sqlorm-core/postgres"]
-sqlite = ["sqlorm-core/sqlite"]
 
 
 [dependencies]

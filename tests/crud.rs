@@ -1,7 +1,8 @@
 mod common;
+use common::entities::UserExecutor;
 
-use common::entities::{Donation, Jar, User};
 use common::create_clean_db;
+use common::entities::{Donation, Jar, User};
 
 #[tokio::test]
 async fn test_user_crud_operations() {
@@ -43,7 +44,8 @@ async fn test_user_crud_operations() {
         .expect("Updated user not found");
     assert_eq!(verified_user.username, "updated_username");
 
-    let all_users = User::find_all(&pool)
+    let all_users = User::query()
+        .fetch_all(&pool)
         .await
         .expect("Failed to find all users");
     assert_eq!(all_users.len(), 1);
@@ -78,7 +80,8 @@ async fn test_insert_vs_update_behavior() {
     assert_eq!(updated.id, new_user.id, "ID should remain the same");
     assert_eq!(updated.username, "updated_insert_user");
 
-    let all_users = User::find_all(&pool)
+    let all_users = User::query()
+        .fetch_all(&pool)
         .await
         .expect("Failed to get all users");
     assert_eq!(all_users.len(), 1);
@@ -95,7 +98,10 @@ async fn test_forced_insert_and_update() {
     let original_username = user.username.clone();
     let mut user_to_update = user;
     user_to_update.username = "force_updated".to_string();
-    let user = user_to_update.update(&pool).await.expect("Failed to force update");
+    let user = user_to_update
+        .update(&pool)
+        .await
+        .expect("Failed to force update");
     assert_eq!(user.username, "force_updated");
     assert_ne!(user.username, original_username);
 }
