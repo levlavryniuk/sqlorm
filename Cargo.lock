@@ -1744,7 +1744,7 @@ dependencies = [
 
 [[package]]
 name = "sqlorm"
-version = "0.2.2"
+version = "0.2.3"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1760,7 +1760,7 @@ dependencies = [
 
 [[package]]
 name = "sqlorm-core"
-version = "0.2.2"
+version = "0.2.3"
 dependencies = [
  "async-trait",
  "sqlx",
@@ -1768,7 +1768,7 @@ dependencies = [
 
 [[package]]
 name = "sqlorm-macros"
-version = "0.2.2"
+version = "0.2.3"
 dependencies = [
  "proc-macro2",
  "quote",
