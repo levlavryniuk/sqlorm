@@ -35,6 +35,8 @@ pub use sqlorm_core::*;
 pub use sqlorm_core::{Connection, Driver, Executor, Pool, Row};
 pub use sqlorm_macros::Entity;
 pub use sqlorm_macros::table;
+pub use hashbrown::HashMap;
+
 pub mod prelude {
     pub use async_trait::async_trait;
     pub use sqlorm_core::*;

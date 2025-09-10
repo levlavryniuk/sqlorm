@@ -28,6 +28,7 @@ async-trait = "0.1.8"
 lazy_static = "1.5"
 sqlx = { version = "0.8" }
 thiserror = "2"
+hashbrown = "0.14"
 
 
 [dependencies]
@@ -35,6 +36,7 @@ sqlorm-core.workspace = true
 sqlorm-macros.workspace = true
 async-trait.workspace = true
 sqlx.workspace = true
+hashbrown.workspace = true
 
 [features]
 default = []

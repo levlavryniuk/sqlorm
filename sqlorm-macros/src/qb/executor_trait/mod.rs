@@ -94,8 +94,7 @@ pub fn executor_trait(es: &crate::EntityStruct) -> proc_macro2::TokenStream {
                             .fetch_all(&mut *conn)
                             .await?;
 
-                        use std::collections::HashMap;
-                        let mut grouped: HashMap<_, Vec<#other>> = HashMap::new();
+                        let mut grouped: ::sqlorm::HashMap<_, Vec<#other>> = ::sqlorm::HashMap::new();
                         for rel in related {
                             let key = rel.#foreign_key;
                             grouped.entry(key).or_default().push(rel);
