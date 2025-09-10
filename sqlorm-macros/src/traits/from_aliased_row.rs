@@ -10,6 +10,16 @@ pub fn from_aliased_row(es: &EntityStruct) -> proc_macro2::TokenStream {
     let field_types: Vec<_> = fields.iter().map(|f| &f.ty).collect();
     let col_names: Vec<_> = fields.iter().map(|f| f.ident.to_string()).collect();
 
+    let has_ignored = es.fields.iter().any(|f| f.is_ignored());
+
+    let default_part = if has_ignored {
+        quote! {
+            ..Default::default()
+        }
+    } else {
+        quote! {}
+    };
+
     quote! {
         #[automatically_derived]
         impl ::sqlorm::FromAliasedRow for #name {
@@ -20,9 +30,8 @@ pub fn from_aliased_row(es: &EntityStruct) -> proc_macro2::TokenStream {
                 Ok(Self {
                     #(
                         #field_idents: row.try_get::<#field_types, &str>(&format!("{}{}", #alias, #col_names))?
-                    ),*
-                    ,
-                    ..Default::default()
+                    ),*,
+                    #default_part
                 })
             }
         }

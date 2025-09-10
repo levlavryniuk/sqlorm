@@ -29,6 +29,10 @@ pub fn relations_trait(es: &EntityStruct) -> proc_macro2::TokenStream {
     let fn_idents = declarations(es);
     let implementations = implementations(es, &rel_ident);
 
+    if es.relations.is_empty() {
+        return proc_macro2::TokenStream::new();
+    }
+
     quote::quote! {
         #[automatically_derived]
         pub trait #rel_ident {
