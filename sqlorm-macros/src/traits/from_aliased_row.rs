@@ -13,9 +13,7 @@ pub fn from_aliased_row(es: &EntityStruct) -> proc_macro2::TokenStream {
     let has_ignored = es.fields.iter().any(|f| f.is_ignored());
 
     let default_part = if has_ignored {
-        quote! {
-            ..Default::default()
-        }
+        quote! { ..Default::default() }
     } else {
         quote! {}
     };
