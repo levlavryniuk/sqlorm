@@ -1,6 +1,5 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use sqlorm::Entity;
 use sqlorm::prelude::*;
 use sqlorm::table;
 use uuid::Uuid;
@@ -103,6 +102,7 @@ pub struct Donation {
     pub updated_at: DateTime<Utc>,
     pub payed_at: Option<DateTime<Utc>>,
 }
+
 impl User {
     /// Creates a test user with default values
     pub fn test_user(email: &str, username: &str) -> Self {

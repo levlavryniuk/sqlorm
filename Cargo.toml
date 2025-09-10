@@ -19,14 +19,7 @@ readme = "README.md"
 documentation = "https://docs.rs/sqlorm"
 
 [workspace]
-members = [
-  "sqlorm-core",
-  ".",
-  "sqlorm-macros",
-  "examples/common/entities",
-  "examples/common/migrations-helper",
-  "examples",
-]
+members = ["sqlorm-core", ".", "sqlorm-macros"]
 
 [workspace.dependencies]
 sqlorm-core = { path = "sqlorm-core", version = "0.2.1" }
@@ -55,6 +48,27 @@ migrate = ["sqlx/migrate"]
 [package.metadata.docs.rs]
 features = ["postgres"]
 
+[[test]]
+name = "crud"
+path = "tests/crud.rs"
+required-features = ["postgres", "uuid"]
+
+[[test]]
+name = "filters"
+path = "tests/filters.rs"
+required-features = ["postgres", "uuid"]
+
+[[test]]
+name = "relations"
+path = "tests/relations.rs"
+required-features = ["postgres", "uuid"]
+
+[[test]]
+name = "select"
+path = "tests/select.rs"
+required-features = ["postgres", "uuid"]
+
+
 [workspace.lints.clippy]
 expect_used = "warn"
 pedantic = { level = "warn", priority = -1 }
@@ -69,6 +83,11 @@ sqlx = { version = "0.8", features = [
   "sqlite",
   "mysql",
   "postgres",
+  "chrono",
 ] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 tokio-test = "0"
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1.0", features = ["v4", "serde"] }
+serde = { version = "1.0", features = ["derive"] }
+tempfile = "3.8"

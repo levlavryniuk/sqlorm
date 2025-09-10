@@ -30,6 +30,7 @@ pub fn relations_trait(es: &EntityStruct) -> proc_macro2::TokenStream {
     let implementations = implementations(es, &rel_ident);
 
     quote::quote! {
+        #[automatically_derived]
         pub trait #rel_ident {
             #(
                 fn #fn_idents(self) -> ::sqlorm::QB<#s_ident>;

@@ -1,5 +1,7 @@
-use entities::{Donation, Jar, User};
-use sqlorm_examples::create_clean_db;
+mod common;
+
+use common::entities::{Donation, Jar, User};
+use common::create_clean_db;
 
 #[tokio::test]
 async fn test_user_crud_operations() {
