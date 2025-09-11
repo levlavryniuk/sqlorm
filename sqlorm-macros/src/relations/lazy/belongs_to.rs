@@ -24,6 +24,7 @@ pub fn belongs_to(tbl: &EntityStruct) -> TokenStream {
             } = rel
             {
                 let fn_ident = Ident::new(relation_name, Span::call_site());
+                let const_field = Ident::new(&self_field.to_string(), other.span());
                 Some(quote! {
                     pub async fn #fn_ident<'a, E>(
                         &self,
@@ -32,8 +33,8 @@ pub fn belongs_to(tbl: &EntityStruct) -> TokenStream {
                     where
                         E: Send + ::sqlorm::sqlx::Acquire<'a, Database = ::sqlorm::Driver>
                     {
-                        let mut conn = executor.acquire().await?;
-                        #other::find_by_id(&mut *conn, self.#self_field).await
+                        // #other::find_by_id(&mut *conn, self.#self_field).await
+                        #other::query().filter(#other::#const_field.eq(self.#self_field)).fetch_optional(executor).await
                     }
                 })
             } else {

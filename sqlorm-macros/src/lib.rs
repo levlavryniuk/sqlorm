@@ -22,9 +22,9 @@ pub fn entity(input: TokenStream) -> TokenStream {
 }
 
 #[proc_macro_attribute]
-pub fn table(_: TokenStream, input: TokenStream) -> TokenStream {
+pub fn table(args: TokenStream, input: TokenStream) -> TokenStream {
     let model = parse_macro_input!(input as ItemStruct);
-    let model = model.to_token_stream();
+    let model = model.into_token_stream();
 
     quote::quote! {
         #[derive(::sqlorm::sqlx::FromRow,::sqlorm::Entity)]

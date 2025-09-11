@@ -9,7 +9,7 @@ use syn::{Ident, Type};
 
 use crate::{
     entity::{EntityStruct, FieldKind, TimestampKind},
-    sql::{generate_placeholders, generate_single_placeholder, with_quotes},
+    sql::{generate_placeholders, generate_single_placeholder},
 };
 
 /// Checks if a type is a UUID type that should be auto-generated.
@@ -63,7 +63,7 @@ fn is_uuid_type(ty: &Type) -> bool {
 /// ```
 pub fn save(es: &EntityStruct) -> TokenStream {
     let s_ident = &es.struct_ident;
-    let table_name = with_quotes(&es.table_name);
+    let table_name = &es.table_name.sql;
 
     let pk_field = &es.pk;
     let pk_ident = &pk_field.ident;

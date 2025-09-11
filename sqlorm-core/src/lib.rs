@@ -8,6 +8,7 @@ pub use crate::qb::TableInfo;
 pub use async_trait::async_trait;
 pub use qb::Column;
 pub use qb::Condition;
+pub use qb::with_quotes;
 pub use qb::*;
 mod traits;
 

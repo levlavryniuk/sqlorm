@@ -1,8 +1,9 @@
 use crate::{qb, traits};
 use proc_macro2::TokenStream;
 use quote::quote;
+use sqlorm_core::{Table, with_quotes};
 use syn::{
-    Data, DeriveInput, Field, Fields, Ident, Result, Type,
+    Data, DeriveInput, Field, Fields, Ident, ItemStruct, Result, Type,
     parse::{Parse, ParseStream},
 };
 
@@ -69,7 +70,7 @@ pub struct EntityStruct {
     /// The name of the Rust struct
     pub struct_ident: Ident,
     /// The database table name (from `#[table_name]` or struct name + "s")
-    pub table_name: String,
+    pub table_name: TableName,
     /// All fields in the struct
     pub fields: Vec<EntityField>,
     /// The primary key field (exactly one required)
@@ -78,24 +79,36 @@ pub struct EntityStruct {
     pub relations: Vec<relations::Relation>,
 }
 
+#[derive(Debug)]
+pub struct TableName {
+    pub raw: String,
+    pub sql: String,
+}
+
 impl Parse for EntityStruct {
     fn parse(input: ParseStream) -> Result<Self> {
         let derive_input: DeriveInput = input.parse()?;
         let struct_ident = derive_input.ident.clone();
-        let mut table_name = struct_ident.to_string().to_lowercase();
+        let mut table_name_raw = struct_ident.to_string().to_lowercase();
 
         for attr in &derive_input.attrs {
-            if attr.path().is_ident("table") {
+            if attr.path().is_ident("sql") {
                 attr.parse_nested_meta(|meta| {
                     if meta.path.is_ident("name") {
                         let lit: syn::LitStr = meta.value()?.parse()?;
-                        table_name = lit.value();
+                        table_name_raw = lit.value();
+                        return Ok(());
+                    } else {
                         return Ok(());
                     }
-                    Err(meta.error("unrecognized table attribute"))
                 })?;
             }
         }
+        let table_name_sql = with_quotes(&table_name_raw);
+        let table_name = TableName {
+            raw: table_name_raw,
+            sql: table_name_sql,
+        };
 
         let fields: Vec<EntityField> = match derive_input.data {
             Data::Struct(data) => match data.fields {

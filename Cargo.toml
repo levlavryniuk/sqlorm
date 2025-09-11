@@ -1,3 +1,4 @@
+
 [workspace.package]
 version = "0.2.5"
 license = "Apache-2.0"
@@ -46,40 +47,11 @@ chrono = ["sqlx/chrono"]
 extra-traits = ["sqlorm-macros/extra-traits"]
 uuid = ["sqlorm-core/uuid", "sqlorm-macros/uuid"]
 migrate = ["sqlx/migrate"]
+raw-sqlx = []
 
 
 [package.metadata.docs.rs]
 features = ["postgres"]
-
-# [[test]]
-# name = "crud"
-# path = "tests/crud.rs"
-# required-features = ["postgres", "uuid", "extra-traits"]
-#
-# [[test]]
-# name = "filters"
-# path = "tests/filters.rs"
-# required-features = ["postgres", "uuid"]
-#
-# [[test]]
-# name = "relations"
-# path = "tests/relations.rs"
-# required-features = ["postgres", "uuid"]
-#
-# [[test]]
-# name = "select"
-# path = "tests/select.rs"
-# required-features = ["postgres", "uuid"]
-
-[[example]]
-name = "basic"
-path = "examples/basic/main.rs"
-required-features = ["postgres", "uuid", "extra-traits"]
-
-[[example]]
-name = "crud"
-path = "examples/crud/main.rs"
-required-features = ["postgres", "uuid", "extra-traits"]
 
 [workspace.lints.clippy]
 expect_used = "warn"
@@ -104,3 +76,5 @@ chrono = { version = "0.4", features = ["serde"] }
 uuid = { version = "1.0", features = ["v4", "serde"] }
 serde = { version = "1.0", features = ["derive"] }
 tempfile = "3.8"
+criterion = { version = "0.7", features = ["async_tokio"] }
+rand = "0.9"

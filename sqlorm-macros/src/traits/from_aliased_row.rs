@@ -3,7 +3,7 @@ use quote::quote;
 
 pub fn from_aliased_row(es: &EntityStruct) -> proc_macro2::TokenStream {
     let name = &es.struct_ident;
-    let alias = aliased_table_name(&es.table_name);
+    let alias = aliased_table_name(&es.table_name.raw);
 
     let fields: Vec<&EntityField> = es.fields.iter().filter(|f| !f.is_ignored()).collect();
     let field_idents: Vec<_> = fields.iter().map(|f| &f.ident).collect();

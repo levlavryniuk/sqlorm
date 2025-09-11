@@ -13,7 +13,7 @@ use sqlx::QueryBuilder;
 
 /// Quote identifiers appropriately for the target database
 /// Both PostgreSQL and SQLite support double quotes for identifiers
-fn with_quotes(s: &str) -> String {
+pub fn with_quotes(s: &str) -> String {
     // Double quotes work for both PostgreSQL and SQLite
     // This ensures consistent behavior across databases
     format!("\"{}\"", s)

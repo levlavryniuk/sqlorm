@@ -5,7 +5,7 @@ use sqlorm::table;
 use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
-#[table(name = "user")]
+#[table]
 pub struct User {
     #[sql(pk)]
     #[sql(relation(has_many -> Jar, relation = "jars", on = owner_id))]
@@ -37,7 +37,7 @@ pub struct User {
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
-#[table(name = "jar")]
+#[table]
 pub struct Jar {
     #[sql(pk)]
     #[sql(relation(has_many -> Donation, relation = "donations", on = jar_id))]
@@ -70,7 +70,7 @@ pub struct Jar {
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
-#[table(name = "donation")]
+#[table]
 pub struct Donation {
     #[sql(pk)]
     pub id: Uuid,
