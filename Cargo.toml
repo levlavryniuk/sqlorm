@@ -22,13 +22,13 @@ documentation = "https://docs.rs/sqlorm"
 members = ["sqlorm-core", ".", "sqlorm-macros"]
 
 [workspace.dependencies]
-sqlorm-core = { path = "sqlorm-core", version = "0.2.3" }
-sqlorm-macros = { path = "sqlorm-macros", version = "0.2.3" }
+sqlorm-core = { path = "sqlorm-core", version = "0.2.5" }
+sqlorm-macros = { path = "sqlorm-macros", version = "0.2.5" }
 async-trait = "0.1.8"
 lazy_static = "1.5"
-sqlx = { version = "0.8" }
+sqlx = { version = "0.8.6" }
 thiserror = "2"
-hashbrown = "0.14"
+hashbrown = "0.16"
 
 
 [dependencies]
@@ -51,25 +51,25 @@ migrate = ["sqlx/migrate"]
 [package.metadata.docs.rs]
 features = ["postgres"]
 
-[[test]]
-name = "crud"
-path = "tests/crud.rs"
-required-features = ["postgres", "uuid", "extra-traits"]
-
-[[test]]
-name = "filters"
-path = "tests/filters.rs"
-required-features = ["postgres", "uuid"]
-
-[[test]]
-name = "relations"
-path = "tests/relations.rs"
-required-features = ["postgres", "uuid"]
-
-[[test]]
-name = "select"
-path = "tests/select.rs"
-required-features = ["postgres", "uuid"]
+# [[test]]
+# name = "crud"
+# path = "tests/crud.rs"
+# required-features = ["postgres", "uuid", "extra-traits"]
+#
+# [[test]]
+# name = "filters"
+# path = "tests/filters.rs"
+# required-features = ["postgres", "uuid"]
+#
+# [[test]]
+# name = "relations"
+# path = "tests/relations.rs"
+# required-features = ["postgres", "uuid"]
+#
+# [[test]]
+# name = "select"
+# path = "tests/select.rs"
+# required-features = ["postgres", "uuid"]
 
 [[example]]
 name = "basic"
