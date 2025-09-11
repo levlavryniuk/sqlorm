@@ -1,6 +1,8 @@
 #![cfg(any(feature = "postgres", feature = "sqlite"))]
 
+mod generic_row;
 pub mod qb;
+pub use generic_row::GenericRow;
 
 pub use crate::qb::TableInfo;
 pub use async_trait::async_trait;
@@ -13,14 +15,14 @@ mod traits;
 pub use driver::{Connection, Driver, Pool, Row};
 
 use sqlx::FromRow;
-pub use traits::Executor;
 pub use traits::FromAliasedRow;
+pub use traits::GenericExecutor;
 pub use traits::Table;
 
 #[async_trait]
-impl<T> Executor<T> for QB<T>
+impl<T> GenericExecutor<T> for QB<T>
 where
-    T: for<'r> FromRow<'r, Row> + Send + Unpin + std::fmt::Debug,
+    T: for<'r> FromRow<'r, Row> + GenericRow + Send + Unpin + std::fmt::Debug,
 {
     async fn fetch_one_as(mut self, pool: &Pool) -> sqlx::Result<T> {
         self.eager.clear();
@@ -33,15 +35,6 @@ where
         let rows = self.build_query().build().fetch_all(pool).await?;
         rows.iter().map(T::from_row).collect()
     }
-}
-
-#[macro_export]
-macro_rules! debug_q {
-    ($q:expr) => {{
-        use sqlx::Execute;
-        let sql = sqlx::Execute::sql(&$q);
-        ::std::dbg!(sql);
-    }};
 }
 
 pub mod driver {

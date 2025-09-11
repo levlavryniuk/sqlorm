@@ -1,8 +1,8 @@
 mod common;
 
-use common::entities::{Donation, Jar, User};
 use common::create_clean_db;
-use sqlorm::Executor;
+use common::entities::{Donation, Jar, User};
+use sqlorm::GenericExecutor;
 use uuid::Uuid;
 
 async fn setup_select_test_data(pool: &sqlorm::Pool) -> (User, Jar, Donation) {
@@ -156,12 +156,16 @@ async fn test_select_with_filtering() {
         .expect("Failed to select multiple with filtering");
 
     assert!(results.len() >= 2);
-    assert!(results
-        .iter()
-        .any(|(e, u)| e == "select1@example.com" && u == "select1"));
-    assert!(results
-        .iter()
-        .any(|(e, u)| e == "select2@example.com" && u == "select2"));
+    assert!(
+        results
+            .iter()
+            .any(|(e, u)| e == "select1@example.com" && u == "select1")
+    );
+    assert!(
+        results
+            .iter()
+            .any(|(e, u)| e == "select2@example.com" && u == "select2")
+    );
 }
 
 #[tokio::test]

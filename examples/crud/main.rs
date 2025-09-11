@@ -5,7 +5,9 @@
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use sqlorm::GenericExecutor;
 use sqlorm::prelude::*;
+use sqlorm::sqlx::Executor as SqlxExecutor;
 use sqlorm::table;
 use std::env;
 use uuid::Uuid;
@@ -69,6 +71,26 @@ pub struct Donation {
     pub updated_at: DateTime<Utc>,
 }
 
+pub async fn create_test_db() -> Pool {
+    let base_url = "postgres://test:test@localhost:5432/".to_string();
+
+    let admin_pool = Pool::connect(&base_url).await.unwrap();
+
+    let db_name = format!("test_db_{}", Uuid::new_v4().to_string().replace("-", ""));
+    admin_pool
+        .execute(format!(r#"CREATE DATABASE "{}""#, db_name).as_str())
+        .await
+        .expect("Failed to create test database");
+
+    let mut test_db_url = base_url.clone();
+    if let Some(idx) = test_db_url.rfind('/') {
+        test_db_url.replace_range(idx + 1.., &db_name);
+    }
+
+    Pool::connect(&test_db_url)
+        .await
+        .expect("Failed to connect to test database")
+}
 async fn setup_database(pool: &sqlorm::Pool) -> Result<(), sqlorm::sqlx::Error> {
     // Create tables with proper schema
     sqlorm::sqlx::query(
@@ -94,7 +116,7 @@ async fn setup_database(pool: &sqlorm::Pool) -> Result<(), sqlorm::sqlx::Error> 
             id BIGSERIAL PRIMARY KEY,
             title VARCHAR NOT NULL,
             description TEXT,
-            goal DECIMAL(10,2),
+            goal DOUBLE PRECISION,
             owner_id BIGINT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
             created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
             updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -108,7 +130,7 @@ async fn setup_database(pool: &sqlorm::Pool) -> Result<(), sqlorm::sqlx::Error> 
         r#"
         CREATE TABLE IF NOT EXISTS "donation" (
             id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            amount DECIMAL(10,2) NOT NULL,
+            amount DOUBLE PRECISION NOT NULL,
             message TEXT,
             jar_id BIGINT NOT NULL REFERENCES "jar"(id) ON DELETE CASCADE,
             donor_id BIGINT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
@@ -125,13 +147,8 @@ async fn setup_database(pool: &sqlorm::Pool) -> Result<(), sqlorm::sqlx::Error> 
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let database_url = env::var("DATABASE_URL")
-        .unwrap_or_else(|_| "postgres://us:pa@localhost:5432/sqlorm_crud".to_string());
+    let pool = create_test_db().await;
 
-    println!("🔌 Connecting to database: {}", database_url);
-    let pool = sqlorm::Pool::connect(&database_url).await?;
-
-    println!("🏗️  Setting up database tables...");
     setup_database(&pool).await?;
 
     println!("\\n=== CREATE Operations ===");

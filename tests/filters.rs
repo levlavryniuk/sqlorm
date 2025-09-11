@@ -1,5 +1,5 @@
 use common::entities::{DonationExecutor, JarExecutor, UserExecutor};
-use sqlorm::Executor;
+use sqlorm::GenericExecutor;
 mod common;
 
 use common::create_clean_db;

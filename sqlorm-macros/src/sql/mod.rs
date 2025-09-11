@@ -18,12 +18,12 @@ mod save;
 /// - `find::find()` - find_by_* methods for unique fields
 pub fn sql(es: &EntityStruct) -> TokenStream {
     let save = save::save(es);
-    #[cfg(feature = "extra-traits")]
-    let find = find::find(es);
+    let find_unique = find::find_unique(es);
 
     quote! {
         #save
-        #find
+        #[cfg(feature = "extra-traits")]
+        #find_unique
     }
 }
 

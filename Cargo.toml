@@ -71,6 +71,15 @@ name = "select"
 path = "tests/select.rs"
 required-features = ["postgres", "uuid"]
 
+[[example]]
+name = "basic"
+path = "examples/basic/main.rs"
+required-features = ["postgres", "uuid", "extra-traits"]
+
+[[example]]
+name = "crud"
+path = "examples/crud/main.rs"
+required-features = ["postgres", "uuid", "extra-traits"]
 
 [workspace.lints.clippy]
 expect_used = "warn"
@@ -82,6 +91,7 @@ wildcard_imports = "warn"
 [dev-dependencies]
 sqlx = { version = "0.8", features = [
   "runtime-tokio-rustls",
+  "uuid",
   "any",
   "sqlite",
   "mysql",

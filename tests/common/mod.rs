@@ -24,7 +24,7 @@ pub async fn run_migrations(pool: &Pool) -> Result<(), MigrateError> {
 
 #[cfg(feature = "postgres")]
 pub async fn create_test_db() -> Pool {
-    let base_url = "postgres://us:pa@localhost:5432/".to_string();
+    let base_url = "postgres://test:test@localhost:5432/".to_string();
     let admin_pool = Pool::connect(&base_url).await.unwrap();
 
     let db_name = format!("test_db_{}", Uuid::new_v4().to_string().replace("-", ""));
@@ -48,7 +48,7 @@ pub async fn setup_test_db() -> Pool {
     use std::env;
     
     let database_url = env::var("TEST_DATABASE_URL")
-        .unwrap_or_else(|_| "postgres://us:pa@localhost:5432/test".to_string());
+        .unwrap_or_else(|_| "postgres://test:test@localhost:5432/test".to_string());
 
     let pool = sqlorm::Pool::connect(&database_url)
         .await

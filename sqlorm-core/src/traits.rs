@@ -40,7 +40,7 @@ pub trait FromAliasedRow {
 /// PostgreSQL
 ///
 /// ```ignore
-/// use sqlorm_core::{qb::{QB, Column}, TableInfo, Executor, Pool};
+/// use sqlorm_core::{qb::{QB, Column}, TableInfo, GenericExecutor, Pool};
 /// use std::marker::PhantomData;
 ///
 /// # async fn run(pool: &Pool) -> sqlx::Result<()> {
@@ -60,7 +60,7 @@ pub trait FromAliasedRow {
 /// SQLite
 ///
 /// ```no_run
-/// use sqlorm_core::{qb::{QB, Column}, TableInfo, Executor, Pool};
+/// use sqlorm_core::{qb::{QB, Column}, TableInfo, GenericExecutor, Pool};
 /// use std::marker::PhantomData;
 ///
 /// # async fn run(pool: &Pool) -> sqlx::Result<()> {
@@ -77,7 +77,7 @@ pub trait FromAliasedRow {
 /// # }
 /// ```
 #[async_trait]
-pub trait Executor<T> {
+pub trait GenericExecutor<T> {
     /// Executes the query and returns a single row mapped as `T`.
     async fn fetch_one_as(self, pool: &Pool) -> sqlx::Result<T>;
     /// Executes the query and returns all rows mapped as `T`.

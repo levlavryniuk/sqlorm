@@ -1,14 +1,38 @@
 //! # Basic SQLOrm Example
 //!
 //! This example demonstrates the basic usage of SQLOrm with PostgreSQL.
-//! Run with: `cargo run --example basic --features="postgres uuid"`
+//! Run with: `cargo run --example basic --features="postgres uuid extra-traits"`
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use sqlorm::prelude::*;
+use sqlorm::sqlx::Executor;
 use sqlorm::table;
+use sqlx::postgres::PgConnectOptions;
 use std::env;
 
+use uuid::Uuid;
+
+pub async fn create_test_db() -> Pool {
+    let base_url = "postgres://test:test@localhost:5432/".to_string();
+
+    let admin_pool = Pool::connect(&base_url).await.unwrap();
+
+    let db_name = format!("test_db_{}", Uuid::new_v4().to_string().replace("-", ""));
+    admin_pool
+        .execute(format!(r#"CREATE DATABASE "{}""#, db_name).as_str())
+        .await
+        .expect("Failed to create test database");
+
+    let mut test_db_url = base_url.clone();
+    if let Some(idx) = test_db_url.rfind('/') {
+        test_db_url.replace_range(idx + 1.., &db_name);
+    }
+
+    Pool::connect(&test_db_url)
+        .await
+        .expect("Failed to connect to test database")
+}
 // Define a simple User entity
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[table(name = "user")]
@@ -40,14 +64,7 @@ impl User {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Get database URL from environment or use default
-    let database_url = env::var("DATABASE_URL")
-        .unwrap_or_else(|_| "postgres://us:pa@localhost:5432/sqlorm_basic".to_string());
-
-    println!("Connecting to database: {}", database_url);
-
-    // Connect to the database
-    let pool = sqlorm::Pool::connect(&database_url).await?;
+    let pool = create_test_db().await;
 
     // Create the users table
     sqlorm::sqlx::query(

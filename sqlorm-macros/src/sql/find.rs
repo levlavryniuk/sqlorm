@@ -4,7 +4,7 @@ use syn::Ident;
 
 use crate::entity::EntityStruct;
 
-pub fn find(es: &EntityStruct) -> TokenStream {
+pub fn find_unique(es: &EntityStruct) -> TokenStream {
     let s_ident = &es.struct_ident;
 
     let unique_fields: Vec<_> = es
