@@ -12,7 +12,7 @@ pub fn handle(entity: &EntityStruct) -> TokenStream {
 
     let field_names: Vec<String> = fields.iter().map(|f| f.ident.to_string()).collect();
     let field_ty: Vec<&syn::Type> = fields.iter().map(|f| &f.ty).collect();
-    let table_alias = aliased_table_name(&entity.table_name.raw);
+    let table_alias = aliased_table_name(&entity.table_name.sql);
 
     let const_idents: Vec<Ident> = fields
         .iter()

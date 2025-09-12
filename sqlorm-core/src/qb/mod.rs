@@ -122,11 +122,7 @@ impl<T: std::fmt::Debug> QB<T> {
     }
 
     fn build_from_clause(&self) -> String {
-        format!(
-            "FROM {} AS {}",
-            with_quotes(self.base.name),
-            self.base.alias
-        )
+        format!("FROM {} AS {}", self.base.name, self.base.alias)
     }
 
     pub fn filter(mut self, cond: Condition) -> Self {
@@ -140,8 +136,7 @@ impl<T: std::fmt::Debug> QB<T> {
         for join in &self.eager {
             let other_table = format!(
                 "{} AS {}",
-                with_quotes(join.foreign_table.name),
-                join.foreign_table.alias
+                join.foreign_table.name, join.foreign_table.alias
             );
 
             let jt = match join.join_type {

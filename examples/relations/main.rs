@@ -34,8 +34,6 @@ impl User {
     }
 }
 
-/// Represents a blog post in the database.
-/// Each post belongs to a user.
 #[derive(Debug, Clone, Default)]
 #[table]
 #[sql(name = "posts")]

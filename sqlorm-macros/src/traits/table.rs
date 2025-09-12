@@ -5,7 +5,7 @@ use crate::{EntityStruct, entity::EntityField, traits::aliased_table_name};
 
 pub fn table(es: &EntityStruct) -> TokenStream {
     let struct_ident = &es.struct_ident;
-    let table_name = &es.table_name.raw;
+    let table_name = &es.table_name.sql;
     let pk = &es.pk;
     let pk_name = pk.ident.to_string();
 

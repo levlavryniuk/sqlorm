@@ -147,12 +147,12 @@ pub fn parse_relation(input: ParseStream, self_ident: Ident) -> Result<Relation>
         return Err(syn::Error::new_spanned(on_ident_kw, "expected `on = ...`"));
     }
     input.parse::<Token![=]>()?;
-    let other_field: Ident = input.parse()?; // <-- only one ident
+    let other_field: Ident = input.parse()?;
 
     Ok(Relation {
         kind: relation_type,
         other: ref_table,
         relation_name,
-        on: (self_ident, other_field), // <-- tuple (self_field, other_field)
+        on: (self_ident, other_field),
     })
 }

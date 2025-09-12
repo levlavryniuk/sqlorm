@@ -27,16 +27,6 @@ pub fn sql(es: &EntityStruct) -> TokenStream {
     }
 }
 
-/// Wraps a string with double quotes for SQL identifier quoting.
-///
-/// This function is used to properly quote table and column names in generated SQL,
-/// ensuring compatibility with both PostgreSQL and SQLite databases.
-/// Both databases support double-quoted identifiers, making this a safe choice
-/// for cross-database compatibility.
-fn with_quotes(s: &str) -> String {
-    format!("\"{}\"", s)
-}
-
 /// Generates appropriate parameter placeholders based on the enabled database feature.
 /// PostgreSQL uses $1, $2, ... while SQLite uses ?
 pub(crate) fn generate_placeholders(count: usize) -> Vec<String> {
