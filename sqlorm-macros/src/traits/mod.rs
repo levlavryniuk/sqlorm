@@ -14,6 +14,3 @@ pub fn traits(es: &EntityStruct) -> proc_macro2::TokenStream {
 
     }
 }
-pub fn aliased_table_name(name: &str) -> String {
-    format!("{}{}", name.to_lowercase(), "__")
-}

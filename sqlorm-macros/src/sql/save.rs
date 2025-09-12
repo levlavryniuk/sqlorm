@@ -5,6 +5,7 @@
 
 use proc_macro2::TokenStream;
 use quote::quote;
+use sqlorm_core::with_quotes;
 use syn::{Ident, Type};
 
 use crate::{
@@ -63,7 +64,7 @@ fn is_uuid_type(ty: &Type) -> bool {
 /// ```
 pub fn save(es: &EntityStruct) -> TokenStream {
     let s_ident = &es.struct_ident;
-    let table_name = &es.table_name.sql;
+    let table_name = &with_quotes(&es.table_name.raw);
 
     let pk_field = &es.pk;
     let pk_ident = &pk_field.ident;

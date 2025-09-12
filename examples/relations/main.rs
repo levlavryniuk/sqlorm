@@ -102,7 +102,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("Created tables `users` and `posts`");
 
-    // Create a user and some posts
     let user = User::new("john_doe").save(&pool).await?;
     let post1 = Post::new(user.id, "First Post").save(&pool).await?;
     let post2 = Post::new(user.id, "Second Post").save(&pool).await?;
@@ -156,6 +155,7 @@ Created user: {:?}",
     println!("Eager loaded post with user: {:?}", loaded_post);
     let loaded_user = loaded_post.user.expect("User should exist");
     println!("Eager loaded user: {:?}", loaded_user);
+    println!("Example completed successfully!");
 
     Ok(())
 }

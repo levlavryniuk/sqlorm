@@ -1,9 +1,11 @@
-use crate::{qb, traits};
+use crate::{
+    qb,
+    traits::{self},
+};
 use proc_macro2::TokenStream;
 use quote::quote;
-use sqlorm_core::{Table, with_quotes};
 use syn::{
-    Data, DeriveInput, Field, Fields, Ident, ItemStruct, Result, Type,
+    Data, DeriveInput, Field, Fields, Ident, Result, Type,
     parse::{Parse, ParseStream},
 };
 
@@ -81,8 +83,10 @@ pub struct EntityStruct {
 
 #[derive(Debug)]
 pub struct TableName {
+    /// Either struct name (`"User".to_lowercase()`), or user-defined value (`#[table(name = "users")]`). Always lowercase.
     pub raw: String,
-    pub sql: String,
+    /// Usually `"__" + self.raw.to_lowercase()`
+    pub alias: String,
 }
 
 impl Parse for EntityStruct {
@@ -104,10 +108,10 @@ impl Parse for EntityStruct {
                 })?;
             }
         }
-        let table_name_sql = with_quotes(&table_name_raw);
+        let alias = format!("__{}", table_name_raw);
         let table_name = TableName {
             raw: table_name_raw,
-            sql: table_name_sql,
+            alias,
         };
 
         let fields: Vec<EntityField> = match derive_input.data {

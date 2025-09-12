@@ -21,6 +21,10 @@ pub struct Column<T> {
     /// The column name as it appears in SQL.
     pub name: &'static str,
 
+    /// The column name with table alias, as it appears in SQL.
+    /// example: `__user.id`
+    pub aliased_name: &'static str,
+
     /// The table alias to use when generating SQL conditions.
     pub table_alias: &'static str,
 
@@ -87,9 +91,13 @@ where
     /// Create a condition: `column IN (?, ?, ...)`
     ///
     /// The number of placeholders matches the number of values provided.
+    ///
+    /// Panics if `vals` is empty
     pub fn in_(self, vals: Vec<T>) -> Condition {
         if vals.is_empty() {
-            panic!("Cannot create IN condition with empty value list. At least one value must be specified.");
+            panic!(
+                "Cannot create IN condition with empty value list. At least one value must be specified."
+            );
         }
         let placeholders: Vec<String> = (0..vals.len()).map(|_| "?".to_string()).collect();
         let sql = format!("{} IN ({})", self.qualified_name(), placeholders.join(", "));
@@ -97,12 +105,20 @@ where
     }
 
     /// Create a condition: `column NOT IN (?, ?, ...)`
+    ///
+    /// Panics if `vals` is empty
     pub fn not_in(self, vals: Vec<T>) -> Condition {
         if vals.is_empty() {
-            panic!("Cannot create NOT IN condition with empty value list. At least one value must be specified.");
+            panic!(
+                "Cannot create NOT IN condition with empty value list. At least one value must be specified."
+            );
         }
         let placeholders: Vec<String> = (0..vals.len()).map(|_| "?".to_string()).collect();
-        let sql = format!("{} NOT IN ({})", self.qualified_name(), placeholders.join(", "));
+        let sql = format!(
+            "{} NOT IN ({})",
+            self.qualified_name(),
+            placeholders.join(", ")
+        );
         Condition::multi(sql, vals)
     }
 

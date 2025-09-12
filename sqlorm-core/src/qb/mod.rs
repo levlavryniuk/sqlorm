@@ -5,6 +5,7 @@ use std::fmt::Debug;
 
 #[cfg(any(feature = "postgres", feature = "sqlite"))]
 use crate::driver::{Driver, Row};
+use crate::format_alised_col_name;
 pub use bind::BindValue;
 pub use column::Column;
 pub use condition::Condition;
@@ -32,7 +33,6 @@ pub struct QB<T: std::fmt::Debug> {
     pub filters: Vec<Condition>,
     _marker: std::marker::PhantomData<T>,
 }
-
 #[derive(Clone, Debug)]
 /// Static information about a table used to build queries.
 pub struct TableInfo {
@@ -103,18 +103,16 @@ impl<T: std::fmt::Debug> QB<T> {
         let mut projections = Vec::new();
 
         for col in &self.base.columns {
-            projections.push(format!(
-                "{}.{} AS {}{}",
-                self.base.alias, col, self.base.alias, col
-            ));
+            let field = format!("{}.{}", self.base.alias, col);
+            let as_field = format_alised_col_name(&self.base.alias, col);
+            projections.push(format!("{} AS {}", field, as_field));
         }
 
         for join in &self.eager {
             for col in &join.foreign_table.columns {
-                projections.push(format!(
-                    "{}.{} AS {}{}",
-                    join.foreign_table.alias, col, join.foreign_table.alias, col
-                ));
+                let field = format!("{}.{}", join.foreign_table.alias, col);
+                let as_field = format_alised_col_name(&join.foreign_table.alias, col);
+                projections.push(format!("{} AS {}", field, as_field));
             }
         }
 
@@ -122,7 +120,11 @@ impl<T: std::fmt::Debug> QB<T> {
     }
 
     fn build_from_clause(&self) -> String {
-        format!("FROM {} AS {}", self.base.name, self.base.alias)
+        format!(
+            "FROM {} AS {}",
+            with_quotes(self.base.name),
+            self.base.alias
+        )
     }
 
     pub fn filter(mut self, cond: Condition) -> Self {
@@ -136,7 +138,8 @@ impl<T: std::fmt::Debug> QB<T> {
         for join in &self.eager {
             let other_table = format!(
                 "{} AS {}",
-                join.foreign_table.name, join.foreign_table.alias
+                with_quotes(join.foreign_table.name),
+                join.foreign_table.alias
             );
 
             let jt = match join.join_type {

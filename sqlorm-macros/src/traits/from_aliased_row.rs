@@ -1,14 +1,18 @@
-use crate::{EntityStruct, entity::EntityField, traits::aliased_table_name};
+use crate::{EntityStruct, entity::EntityField};
 use quote::quote;
+use sqlorm_core::format_alised_col_name;
 
 pub fn from_aliased_row(es: &EntityStruct) -> proc_macro2::TokenStream {
     let name = &es.struct_ident;
-    let alias = aliased_table_name(&es.table_name.sql);
+    let alias = &es.table_name.alias;
 
     let fields: Vec<&EntityField> = es.fields.iter().filter(|f| !f.is_ignored()).collect();
     let field_idents: Vec<_> = fields.iter().map(|f| &f.ident).collect();
     let field_types: Vec<_> = fields.iter().map(|f| &f.ty).collect();
-    let col_names: Vec<_> = fields.iter().map(|f| f.ident.to_string()).collect();
+    let col_names: Vec<_> = fields
+        .iter()
+        .map(|f| format_alised_col_name(alias, &f.ident.to_string()))
+        .collect();
 
     let has_ignored = es.fields.iter().any(|f| f.is_ignored());
 
@@ -27,7 +31,7 @@ pub fn from_aliased_row(es: &EntityStruct) -> proc_macro2::TokenStream {
                 use ::sqlorm::sqlx::Row;
                 Ok(Self {
                     #(
-                        #field_idents: row.try_get::<#field_types, &str>(&format!("{}{}", #alias, #col_names))?
+                        #field_idents: row.try_get::<#field_types, &str>(#col_names)?
                     ),*,
                     #default_part
                 })

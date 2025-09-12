@@ -1,7 +1,9 @@
 #![cfg(any(feature = "postgres", feature = "sqlite"))]
 
+mod consts;
 mod generic_row;
 pub mod qb;
+pub use consts::*;
 pub use generic_row::GenericRow;
 
 pub use crate::qb::TableInfo;
