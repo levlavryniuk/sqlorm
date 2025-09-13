@@ -1,6 +1,6 @@
 
 [workspace.package]
-version = "0.2.6"
+version = "0.3.0"
 license = "Apache-2.0"
 edition = "2024"
 exclude = ["/.github", "/examples", "/tests"]
