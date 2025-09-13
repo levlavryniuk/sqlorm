@@ -48,10 +48,10 @@ pub struct User {
 
     pub name: String,
 
-    #[sql(timestamp = "created_at")]
+    #[sql(timestamp(created_at, chrono::Utc::now()))]
     pub created_at: DateTime<Utc>,
 
-    #[sql(timestamp = "updated_at")]
+    #[sql(timestamp(updated_at, chrono::Utc::now()))]
     pub updated_at: DateTime<Utc>,
 }
 ```

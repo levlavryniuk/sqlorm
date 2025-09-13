@@ -44,7 +44,7 @@ fn is_uuid_type(ty: &Type) -> bool {
 /// - Take ownership of self to force `let user = user.save()` pattern
 /// - Use `RETURNING *` to get the complete updated record
 /// - Return a new instance with updated data
-/// - Handle timestamp fields automatically based on their `#[sql(timestamp = "...")]` attributes
+/// - Handle timestamp fields automatically based on their `#[sql(timestamp(field_name, factory_fn()))]` attributes
 /// - Return `sqlx::Result<Self>` for error handling
 ///
 /// # Generated SQL Examples
@@ -65,7 +65,6 @@ fn is_uuid_type(ty: &Type) -> bool {
 pub fn save(es: &EntityStruct) -> TokenStream {
     let s_ident = &es.struct_ident;
     let table_name = &with_quotes(&es.table_name.raw);
-    dbg!(&table_name);
 
     let pk_field = &es.pk;
     let pk_ident = &pk_field.ident;
@@ -110,19 +109,27 @@ pub fn save(es: &EntityStruct) -> TokenStream {
     let created_assign = es
         .fields
         .iter()
-        .find(|f| matches!(f.kind, FieldKind::Timestamp(TimestampKind::Created)))
+        .find(|f| matches!(f.kind, FieldKind::Timestamp(TimestampKind::Created { .. })))
         .map(|f| {
             let ident = &f.ident;
-            quote! { self.#ident = chrono::Utc::now(); }
+            if let FieldKind::Timestamp(TimestampKind::Created { factory }) = &f.kind {
+                quote! { self.#ident = #factory; }
+            } else {
+                unreachable!()
+            }
         });
 
     let updated_assign_insert = es
         .fields
         .iter()
-        .find(|f| matches!(f.kind, FieldKind::Timestamp(TimestampKind::Updated)))
+        .find(|f| matches!(f.kind, FieldKind::Timestamp(TimestampKind::Updated { .. })))
         .map(|f| {
             let ident = &f.ident;
-            quote! { self.#ident = chrono::Utc::now(); }
+            if let FieldKind::Timestamp(TimestampKind::Updated { factory }) = &f.kind {
+                quote! { self.#ident = #factory; }
+            } else {
+                unreachable!()
+            }
         });
 
     let updated_assign_update = updated_assign_insert.clone();
@@ -150,8 +157,8 @@ pub fn save(es: &EntityStruct) -> TokenStream {
             ///
             /// This method forces an INSERT operation regardless of the primary key value.
             /// It automatically populates timestamp fields marked with:
-            /// - `#[sql(timestamp = "created_at")]` - Set to current UTC time
-            /// - `#[sql(timestamp = "updated_at")]` - Set to current UTC time
+            /// - `#[sql(timestamp(created_at, factory_fn()))]` - Set using custom factory
+            /// - `#[sql(timestamp(updated_at, factory_fn()))]` - Set using custom factory
             ///
             /// Takes ownership of self and returns a new instance with the inserted record data,
             /// including any auto-generated primary key values.
@@ -205,7 +212,7 @@ pub fn save(es: &EntityStruct) -> TokenStream {
             ///
             /// This method forces an UPDATE operation using the primary key to identify the record.
             /// It automatically updates timestamp fields marked with:
-            /// - `#[sql(timestamp = "updated_at")]` - Set to current UTC time
+            /// - `#[sql(timestamp(updated_at, factory_fn()))]` - Set using custom factory
             ///
             /// Takes ownership of self and returns a new instance with the updated record data from the database.
             ///

@@ -1,6 +1,6 @@
-1. Resolve the conflict between sqlx(skip),sql(skip)
+[ ] 1. Resolve the conflict between sqlx(skip),sql(skip)
 
-2. Make table attr add name attribute to Entity struct.
+[x] 2. Make table attr add name attribute to Entity struct.
 
-3. Add chorno feature to resolve all types of chrono
-   // Note. I could give user an ability to provide a piece of code that creates new time. Like, #[timestamp(new = Utc::new())]
+[x] 3. ✅ Add chrono feature to resolve all types of chrono
+// Note. User can now provide custom factory functions for timestamps: #[sql(timestamp(created_at, chrono::Utc::now()))]

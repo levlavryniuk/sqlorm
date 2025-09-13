@@ -28,11 +28,11 @@ pub struct User {
     #[sqlx(skip)]
     pub payed_donations: Option<Vec<Donation>>,
     pub bio: Option<String>,
-    #[sql(timestamp = "created_at")]
+    #[sql(timestamp(created_at, chrono::Utc::now()))]
     pub created_at: DateTime<Utc>,
-    #[sql(timestamp = "updated_at")]
+    #[sql(timestamp(updated_at, chrono::Utc::now()))]
     pub updated_at: DateTime<Utc>,
-    #[sql(timestamp = "deleted_at")]
+    #[sql(timestamp(deleted_at, chrono::Utc::now()))]
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
@@ -61,11 +61,11 @@ pub struct Jar {
     #[sqlx(skip)]
     pub donations: Option<Vec<Donation>>,
 
-    #[sql(timestamp = "created_at")]
+    #[sql(timestamp(created_at, chrono::Utc::now()))]
     pub created_at: DateTime<Utc>,
-    #[sql(timestamp = "updated_at")]
+    #[sql(timestamp(updated_at, chrono::Utc::now()))]
     pub updated_at: DateTime<Utc>,
-    #[sql(timestamp = "deleted_at")]
+    #[sql(timestamp(deleted_at, chrono::Utc::now()))]
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
@@ -94,11 +94,11 @@ pub struct Donation {
     pub note: Option<String>,
     pub is_refunded: bool,
     pub refunded_at: Option<DateTime<Utc>>,
-    #[sql(timestamp = "deleted_at")]
+    #[sql(timestamp(deleted_at, chrono::Utc::now()))]
     pub deleted_at: Option<DateTime<Utc>>,
-    #[sql(timestamp = "created_at")]
+    #[sql(timestamp(created_at, chrono::Utc::now()))]
     pub created_at: DateTime<Utc>,
-    #[sql(timestamp = "updated_at")]
+    #[sql(timestamp(updated_at, chrono::Utc::now()))]
     pub updated_at: DateTime<Utc>,
     pub payed_at: Option<DateTime<Utc>>,
 }

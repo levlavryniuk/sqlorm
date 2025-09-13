@@ -4,7 +4,7 @@
 //! on struct fields, converting them into the appropriate `EntityField` metadata
 //! for code generation.
 
-use syn::{Field, Ident, LitStr, Result, Token, parse::ParseStream};
+use syn::{Field, Ident, LitStr, Result, Token, Expr, parse::ParseStream};
 
 use crate::{
     entity::{EntityField, FieldKind, TimestampKind},
@@ -24,7 +24,7 @@ use crate::{
 /// ## `#[sql(...)]`
 /// - `pk` - Mark as primary key
 /// - `unique` - Mark as unique (generates find_by_* methods)
-/// - `timestamp = "type"` - Automatic timestamp management (created_at, updated_at, deleted_at)
+/// - `timestamp(field_name, factory_fn())` - Automatic timestamp management with custom factory
 /// - `relation(...)` - Define relationships
 ///
 /// ## `#[sqlx(...)]`
@@ -53,13 +53,10 @@ pub fn parse_entity_field(field: &Field) -> Result<EntityField> {
                         kind = FieldKind::PrimaryKey;
                     }
                     "timestamp" => {
-                        let lit: LitStr = meta.value()?.parse()?;
-                        kind = FieldKind::Timestamp(match lit.value().as_str() {
-                            "created_at" => TimestampKind::Created,
-                            "updated_at" => TimestampKind::Updated,
-                            "deleted_at" => TimestampKind::Deleted,
-                            _ => return Err(meta.error("unrecognized timestamp kind")),
-                        });
+                        let content;
+                        syn::parenthesized!(content in meta.input);
+                        let timestamp = parse_timestamp(&content)?;
+                        kind = FieldKind::Timestamp(timestamp);
                     }
                     "relation" => {
                         let content;
@@ -155,4 +152,37 @@ pub fn parse_relation(input: ParseStream, self_ident: Ident) -> Result<Relation>
         relation_name,
         on: (self_ident, other_field),
     })
+}
+
+/// Parses a timestamp attribute into a `TimestampKind`.
+///
+/// Expected syntax:
+/// ```ignore
+/// #[sql(timestamp(field_name, factory_fn()))]
+/// ```
+///
+/// Where:
+/// - `field_name` is the timestamp type: `created_at`, `updated_at`, or `deleted_at`
+/// - `factory_fn()` is the expression that will be called to generate the timestamp value
+///
+/// # Example
+///
+/// ```ignore
+/// #[sql(timestamp(created_at, chrono::Utc::now()))]
+/// pub created_at: DateTime<Utc>,
+/// ```
+pub fn parse_timestamp(input: ParseStream) -> Result<TimestampKind> {
+    let field_name: Ident = input.parse()?;
+    input.parse::<Token![,]>()?;
+    let factory: Expr = input.parse()?;
+    
+    match field_name.to_string().as_str() {
+        "created_at" => Ok(TimestampKind::Created { factory }),
+        "updated_at" => Ok(TimestampKind::Updated { factory }),
+        "deleted_at" => Ok(TimestampKind::Deleted { factory }),
+        _ => Err(syn::Error::new_spanned(
+            field_name,
+            "timestamp field name must be one of: created_at, updated_at, deleted_at",
+        )),
+    }
 }

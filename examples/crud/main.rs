@@ -22,9 +22,9 @@ pub struct User {
     pub first_name: String,
     pub last_name: String,
     pub bio: Option<String>,
-    #[sql(timestamp = "created_at")]
+    #[sql(timestamp(created_at, chrono::Utc::now()))]
     pub created_at: DateTime<Utc>,
-    #[sql(timestamp = "updated_at")]
+    #[sql(timestamp(updated_at, chrono::Utc::now()))]
     pub updated_at: DateTime<Utc>,
 }
 
@@ -41,9 +41,9 @@ pub struct Jar {
     #[sql(skip)]
     #[sqlx(skip)]
     pub owner: Option<User>,
-    #[sql(timestamp = "created_at")]
+    #[sql(timestamp(created_at, chrono::Utc::now()))]
     pub created_at: DateTime<Utc>,
-    #[sql(timestamp = "updated_at")]
+    #[sql(timestamp(updated_at, chrono::Utc::now()))]
     pub updated_at: DateTime<Utc>,
 }
 
@@ -64,9 +64,9 @@ pub struct Donation {
     #[sql(skip)]
     #[sqlx(skip)]
     pub donor: Option<User>,
-    #[sql(timestamp = "created_at")]
+    #[sql(timestamp(created_at, chrono::Utc::now()))]
     pub created_at: DateTime<Utc>,
-    #[sql(timestamp = "updated_at")]
+    #[sql(timestamp(updated_at, chrono::Utc::now()))]
     pub updated_at: DateTime<Utc>,
 }
 

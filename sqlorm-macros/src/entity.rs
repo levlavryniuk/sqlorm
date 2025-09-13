@@ -5,7 +5,7 @@ use crate::{
 use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{
-    Data, DeriveInput, Field, Fields, Ident, Result, Type,
+    Data, DeriveInput, Field, Fields, Ident, Result, Type, Expr,
     parse::{Parse, ParseStream},
 };
 
@@ -52,15 +52,15 @@ pub enum FieldKind {
 
 /// Specifies the type of automatic timestamp management.
 ///
-/// Used with `#[sql(timestamp = "...")]` attributes.
+/// Used with `#[sql(timestamp(field_name, factory_fn()))]` attributes.
 #[derive(Debug, Clone)]
 pub enum TimestampKind {
-    /// Field marked with `#[sql(timestamp = "created_at")]` - set on insert
-    Created,
-    /// Field marked with `#[sql(timestamp = "updated_at")]` - set on insert/update
-    Updated,
-    /// Field marked with `#[sql(timestamp = "deleted_at")]` - for soft deletes
-    Deleted,
+    /// Field marked with `#[sql(timestamp(created_at, factory_fn()))]` - set on insert
+    Created { factory: Expr },
+    /// Field marked with `#[sql(timestamp(updated_at, factory_fn()))]` - set on insert/update
+    Updated { factory: Expr },
+    /// Field marked with `#[sql(timestamp(deleted_at, factory_fn()))]` - for soft deletes
+    Deleted { factory: Expr },
 }
 
 /// Complete representation of an entity struct during macro processing.
