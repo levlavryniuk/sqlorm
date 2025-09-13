@@ -1,3 +1,4 @@
+#![cfg(any(feature = "postgres", feature = "sqlite"))]
 use proc_macro::TokenStream;
 use syn::ItemStruct;
 use syn::parse_macro_input;
