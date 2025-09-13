@@ -1,7 +1,8 @@
 #![cfg(any(feature = "postgres", feature = "sqlite"))]
 use proc_macro::TokenStream;
-use syn::ItemStruct;
+use quote::format_ident;
 use syn::parse_macro_input;
+use syn::{Field, Fields, ItemStruct};
 
 mod naming;
 mod traits;
@@ -75,9 +76,6 @@ pub fn entity(input: TokenStream) -> TokenStream {
 ///   - `has_many -> SomeOtherStruct, relation = "some_other_structs", on = field`
 ///   - `has_one -> SomeOtherStruct, relation = "some_other_struct", on = field`
 ///
-/// ## `#[sqlx(...)]` Attributes
-///
-/// - **`skip`** - Exclude field from sqlx FromRow deserialization
 ///
 /// # Complete Example
 ///
@@ -102,7 +100,6 @@ pub fn entity(input: TokenStream) -> TokenStream {
 ///     pub last_name: String,
 ///     
 ///     #[sql(skip)]
-///     #[sqlx(skip)]
 ///     pub posts: Option<Vec<Post>>,
 ///     
 ///     #[sql(timestamp(created_at, chrono::Utc::now()))]
@@ -125,14 +122,23 @@ pub fn entity(input: TokenStream) -> TokenStream {
 ///     pub user_id: i64,
 ///     
 ///     #[sql(skip)]
-///     #[sqlx(skip)]
 ///     pub author: Option<User>,
 /// }
 /// ```
 ///
 #[proc_macro_attribute]
 pub fn table(args: TokenStream, input: TokenStream) -> TokenStream {
-    let model = parse_macro_input!(input as ItemStruct);
+    let mut model = parse_macro_input!(input as ItemStruct);
+
+    let mut existing_derives = Vec::new();
+    model.attrs.retain(|attr| {
+        if attr.path().is_ident("derive") {
+            existing_derives.push(attr.clone());
+            false
+        } else {
+            true
+        }
+    });
 
     let table_name = if args.is_empty() {
         model.ident.to_string().to_lowercase()
@@ -156,10 +162,74 @@ pub fn table(args: TokenStream, input: TokenStream) -> TokenStream {
         table_name
     };
 
+    inject_relation_fields(&mut model).expect("Failed to inject relation fields");
+
+    // reapply the derive attributes after field injection
     quote::quote! {
+        #(#existing_derives)*
         #[derive(::sqlorm::sqlx::FromRow,::sqlorm::Entity)]
         #[sql(name = #table_name)]
         #model
     }
     .into()
+}
+
+/// Scans struct fields for relation attributes and automatically injects
+/// corresponding relation fields (e.g., posts: Option<Vec<Post>>) with proper attributes.
+/// Throws compile errors if the relation field names are already used.
+/// Uses existing attribute parsing logic to extract relation information.
+fn inject_relation_fields(model: &mut ItemStruct) -> syn::Result<()> {
+    use crate::attrs::parse_entity_field;
+    use crate::relations::RelationType;
+
+    let mut relations_to_inject = Vec::new();
+
+    if let Fields::Named(ref fields) = model.fields {
+        for field in fields.named.iter() {
+            let entity_field = parse_entity_field(field)?;
+            if let Some(field_relations) = entity_field.relations {
+                relations_to_inject.extend(field_relations);
+            }
+        }
+    }
+
+    if let Fields::Named(ref mut fields) = model.fields {
+        for relation in &relations_to_inject {
+            for existing_field in fields.named.iter() {
+                if let Some(field_name) = &existing_field.ident {
+                    if field_name.to_string() == relation.relation_name {
+                        return Err(syn::Error::new_spanned(
+                            field_name,
+                            format!(
+                                "Field '{}' is reserved for auto-generated relation field. Remove this field as it will be injected automatically based on relation attributes.",
+                                relation.relation_name
+                            ),
+                        ));
+                    }
+                }
+            }
+        }
+
+        for relation in relations_to_inject {
+            let field_ident = format_ident!("{}", relation.relation_name);
+            let field_type: syn::Type = match relation.kind {
+                RelationType::HasMany => {
+                    let other_type = &relation.other;
+                    syn::parse_quote! { Option<Vec<#other_type>> }
+                }
+                RelationType::BelongsTo | RelationType::HasOne => {
+                    let other_type = &relation.other;
+                    syn::parse_quote! { Option<#other_type> }
+                }
+            };
+
+            let new_field: Field = syn::parse_quote! {
+                #[sql(skip)]
+                #[sqlx(skip)]
+                pub #field_ident: #field_type
+            };
+            fields.named.push(new_field);
+        }
+    }
+    Ok(())
 }

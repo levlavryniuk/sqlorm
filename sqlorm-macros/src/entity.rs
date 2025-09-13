@@ -5,7 +5,7 @@ use crate::{
 use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{
-    Data, DeriveInput, Field, Fields, Ident, Result, Type, Expr,
+    Data, DeriveInput, Expr, Field, Fields, Ident, Result, Type,
     parse::{Parse, ParseStream},
 };
 

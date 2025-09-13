@@ -11,17 +11,14 @@ use uuid::Uuid;
 
 /// Represents a user in the database.
 /// A user can have multiple posts.
-#[derive(Debug, Clone, Default)]
 #[table(name = "users")]
+#[derive(Debug, Clone, Default)]
 pub struct User {
     #[sql(pk)]
     #[sql(relation(has_many -> Post, relation = "posts", on = user_id))]
     pub id: i64,
     #[sql(unique)]
     pub username: String,
-    #[sql(skip)]
-    #[sqlx(skip)]
-    pub posts: Option<Vec<Post>>,
 }
 
 impl User {
@@ -33,17 +30,14 @@ impl User {
     }
 }
 
-#[derive(Debug, Clone, Default)]
 #[table(name = "posts")]
+#[derive(Debug, Clone, Default)]
 pub struct Post {
     #[sql(pk)]
     pub id: i64,
     #[sql(relation(belongs_to -> User, relation = "user", on = id))]
     pub user_id: i64,
     pub title: String,
-    #[sql(skip)]
-    #[sqlx(skip)]
-    pub user: Option<User>,
 }
 
 impl Post {

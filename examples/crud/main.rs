@@ -11,8 +11,8 @@ use sqlorm::sqlx::Executor as SqlxExecutor;
 use sqlorm::table;
 use uuid::Uuid;
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[table(name = "user")]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct User {
     #[sql(pk)]
     pub id: i64,
@@ -28,8 +28,8 @@ pub struct User {
     pub updated_at: DateTime<Utc>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[table(name = "jar")]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct Jar {
     #[sql(pk)]
     pub id: i64,
@@ -38,17 +38,14 @@ pub struct Jar {
     pub goal: Option<f64>,
     #[sql(relation(belongs_to -> User, relation = "owner", on = id))]
     pub owner_id: i64,
-    #[sql(skip)]
-    #[sqlx(skip)]
-    pub owner: Option<User>,
     #[sql(timestamp(created_at, chrono::Utc::now()))]
     pub created_at: DateTime<Utc>,
     #[sql(timestamp(updated_at, chrono::Utc::now()))]
     pub updated_at: DateTime<Utc>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[table(name = "donation")]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct Donation {
     #[sql(pk)]
     pub id: Uuid,
@@ -58,12 +55,6 @@ pub struct Donation {
     pub jar_id: i64,
     #[sql(relation(belongs_to -> User, relation = "donor", on = id))]
     pub donor_id: i64,
-    #[sql(skip)]
-    #[sqlx(skip)]
-    pub jar: Option<Jar>,
-    #[sql(skip)]
-    #[sqlx(skip)]
-    pub donor: Option<User>,
     #[sql(timestamp(created_at, chrono::Utc::now()))]
     pub created_at: DateTime<Utc>,
     #[sql(timestamp(updated_at, chrono::Utc::now()))]

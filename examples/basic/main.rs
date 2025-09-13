@@ -32,8 +32,8 @@ pub async fn create_test_db() -> Pool {
         .expect("Failed to connect to test database")
 }
 // Define a simple User entity
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[table(name = "user")]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct User {
     #[sql(pk)]
     pub id: i64,
