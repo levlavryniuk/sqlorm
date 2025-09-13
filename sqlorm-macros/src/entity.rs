@@ -93,21 +93,33 @@ impl Parse for EntityStruct {
     fn parse(input: ParseStream) -> Result<Self> {
         let derive_input: DeriveInput = input.parse()?;
         let struct_ident = derive_input.ident.clone();
-        let mut table_name_raw = struct_ident.to_string().to_lowercase();
 
-        for attr in &derive_input.attrs {
-            if attr.path().is_ident("sql") {
-                attr.parse_nested_meta(|meta| {
-                    if meta.path.is_ident("name") {
-                        let lit: syn::LitStr = meta.value()?.parse()?;
-                        table_name_raw = lit.value();
-                        return Ok(());
-                    } else {
-                        return Ok(());
-                    }
-                })?;
+        let table_name_raw = {
+            let mut result = None;
+            for attr in &derive_input.attrs {
+                if attr.path().is_ident("sql") {
+                    attr.parse_nested_meta(|meta| {
+                        if meta.path.is_ident("name") {
+                            let lit: syn::LitStr = meta.value()?.parse()?;
+                            result = Some(lit.value());
+                            Ok(())
+                        } else {
+                            Err(syn::Error::new_spanned(
+                                &struct_ident,
+                                "Unsupported sql attribute",
+                            ))
+                        }
+                    })?;
+                }
             }
+            result
         }
+        .ok_or_else(|| {
+            return syn::Error::new_spanned(
+                &struct_ident,
+                "If you see this, something bad has happened. Contact maintainer",
+            );
+        })?;
         let alias = format!("__{}", table_name_raw);
         let table_name = TableName {
             raw: table_name_raw,

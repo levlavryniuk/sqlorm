@@ -8,8 +8,6 @@ use serde::{Deserialize, Serialize};
 use sqlorm::prelude::*;
 use sqlorm::sqlx::Executor;
 use sqlorm::table;
-use sqlx::postgres::PgConnectOptions;
-use std::env;
 
 use uuid::Uuid;
 

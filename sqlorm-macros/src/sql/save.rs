@@ -65,6 +65,7 @@ fn is_uuid_type(ty: &Type) -> bool {
 pub fn save(es: &EntityStruct) -> TokenStream {
     let s_ident = &es.struct_ident;
     let table_name = &with_quotes(&es.table_name.raw);
+    dbg!(&table_name);
 
     let pk_field = &es.pk;
     let pk_ident = &pk_field.ident;
@@ -266,7 +267,7 @@ pub fn save(es: &EntityStruct) -> TokenStream {
             ///
             /// # Example
             ///
-            /// ```ignore
+            /// ```rust ignore
             /// // New record (primary key is default/0)
             /// let new_user = User {
             ///     id: 0,
@@ -278,10 +279,9 @@ pub fn save(es: &EntityStruct) -> TokenStream {
             /// let saved = new_user.save(&pool).await?; // Will INSERT
             ///
             /// // Existing record (primary key is not default)
-            /// let existing_user = User::find_by_id(&pool, 1).await?.unwrap();
-            /// let mut user_to_save = existing_user;
-            /// user_to_save.name = "Modified".to_string();
-            /// let updated = user_to_save.save(&pool).await?; // Will UPDATE
+            /// let mut existing_user = User::query().fetch_one(&pool).await?.unwrap();
+            /// existing_user.name = "Modified".to_string();
+            /// let updated = existing_user.save(&pool).await?; // Will UPDATE
             /// ```
             pub async fn save<'a, E>(
                 self,

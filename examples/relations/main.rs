@@ -12,8 +12,7 @@ use uuid::Uuid;
 /// Represents a user in the database.
 /// A user can have multiple posts.
 #[derive(Debug, Clone, Default)]
-#[table]
-#[sql(name = "users")]
+#[table(name = "users")]
 pub struct User {
     #[sql(pk)]
     #[sql(relation(has_many -> Post, relation = "posts", on = user_id))]
@@ -35,8 +34,7 @@ impl User {
 }
 
 #[derive(Debug, Clone, Default)]
-#[table]
-#[sql(name = "posts")]
+#[table(name = "posts")]
 pub struct Post {
     #[sql(pk)]
     pub id: i64,

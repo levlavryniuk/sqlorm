@@ -1,5 +1,4 @@
 use proc_macro::TokenStream;
-use quote::ToTokens;
 use syn::ItemStruct;
 use syn::parse_macro_input;
 
@@ -22,12 +21,34 @@ pub fn entity(input: TokenStream) -> TokenStream {
 }
 
 #[proc_macro_attribute]
-pub fn table(_: TokenStream, input: TokenStream) -> TokenStream {
+pub fn table(args: TokenStream, input: TokenStream) -> TokenStream {
     let model = parse_macro_input!(input as ItemStruct);
-    let model = model.into_token_stream();
+
+    let table_name = if args.is_empty() {
+        model.ident.to_string().to_lowercase()
+    } else {
+        let meta_list: syn::punctuated::Punctuated<syn::MetaNameValue, syn::Token![,]> =
+            syn::parse_macro_input!(args with syn::punctuated::Punctuated::parse_terminated);
+
+        let mut table_name = model.ident.to_string().to_lowercase();
+        for meta in meta_list {
+            if meta.path.is_ident("name") {
+                if let syn::Expr::Lit(syn::ExprLit {
+                    lit: syn::Lit::Str(lit_str),
+                    ..
+                }) = meta.value
+                {
+                    table_name = lit_str.value();
+                    break;
+                }
+            }
+        }
+        table_name
+    };
 
     quote::quote! {
         #[derive(::sqlorm::sqlx::FromRow,::sqlorm::Entity)]
+        #[sql(name = #table_name)]
         #model
     }
     .into()

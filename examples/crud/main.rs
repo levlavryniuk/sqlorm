@@ -9,7 +9,6 @@ use sqlorm::GenericExecutor;
 use sqlorm::prelude::*;
 use sqlorm::sqlx::Executor as SqlxExecutor;
 use sqlorm::table;
-use std::env;
 use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -227,7 +226,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Update user bio
     let mut updated_alice = found_alice;
     updated_alice.bio = Some("Senior Rust developer who loves good coffee".to_string());
-    let updated_alice = updated_alice.save(&pool).await?;
+    updated_alice.save(&pool).await?;
     println!("✏️  Updated Alice's bio");
 
     println!("\\n=== SELECT Operations ===");
