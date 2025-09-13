@@ -54,6 +54,7 @@ pub enum FieldKind {
 ///
 /// Used with `#[sql(timestamp(field_name, factory_fn()))]` attributes.
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub enum TimestampKind {
     /// Field marked with `#[sql(timestamp(created_at, factory_fn()))]` - set on insert
     Created { factory: Expr },

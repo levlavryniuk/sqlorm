@@ -44,6 +44,7 @@ pub async fn create_test_db() -> Pool {
 }
 
 #[cfg(feature = "postgres")]
+#[allow(dead_code)]
 pub async fn setup_test_db() -> Pool {
     use std::env;
     

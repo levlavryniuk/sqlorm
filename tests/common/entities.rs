@@ -14,6 +14,7 @@ pub struct User {
     #[sql(unique)]
     pub email: String,
     #[serde(skip)]
+    #[allow(dead_code)]
     pub password: String,
     #[sql(unique)]
     pub username: String,
@@ -105,6 +106,7 @@ pub struct Donation {
 
 impl User {
     /// Creates a test user with default values
+    #[allow(dead_code)]
     pub fn test_user(email: &str, username: &str) -> Self {
         Self {
             email: email.to_string(),
@@ -119,6 +121,7 @@ impl User {
 
 impl Jar {
     /// Creates a test jar with default values
+    #[allow(dead_code)]
     pub fn test_jar(owner_id: i64, alias: &str) -> Self {
         Self {
             title: "Test Jar".to_string(),
@@ -133,6 +136,7 @@ impl Jar {
 
 impl Donation {
     /// Creates a test donation with default values
+    #[allow(dead_code)]
     pub fn test_donation(jar_id: i64, payer_id: i64, amount: f64) -> Self {
         Self {
             amount,

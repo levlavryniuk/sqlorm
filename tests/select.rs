@@ -128,12 +128,12 @@ async fn test_select_nullable_fields() {
 async fn test_select_with_filtering() {
     let pool = create_clean_db().await;
 
-    let user1 = User::test_user("select1@example.com", "select1")
+    let _user1 = User::test_user("select1@example.com", "select1")
         .save(&pool)
         .await
         .expect("Failed to save user1");
 
-    let user2 = User::test_user("select2@example.com", "select2")
+    let _user2 = User::test_user("select2@example.com", "select2")
         .save(&pool)
         .await
         .expect("Failed to save user2");

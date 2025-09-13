@@ -1,7 +1,6 @@
-use common::entities::{DonationExecutor, JarExecutor, UserExecutor};
+use common::entities::{JarExecutor, UserExecutor};
 mod common;
 use common::entities::{JarRelations, UserRelations};
-use uuid::Uuid;
 
 use common::create_clean_db;
 use common::entities::{Donation, Jar, User};

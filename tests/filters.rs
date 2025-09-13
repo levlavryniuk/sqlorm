@@ -1,5 +1,4 @@
-use common::entities::{DonationExecutor, JarExecutor, UserExecutor};
-use sqlorm::GenericExecutor;
+use common::entities::{JarExecutor, UserExecutor};
 mod common;
 
 use common::create_clean_db;
@@ -202,7 +201,7 @@ async fn test_multiple_filters() {
         .await
         .expect("Failed to save user");
 
-    let jar = Jar::test_jar(user.id, "jar_eq")
+    let _jar = Jar::test_jar(user.id, "jar_eq")
         .save(&pool)
         .await
         .expect("Failed to save jar");
