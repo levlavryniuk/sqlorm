@@ -1,10 +1,8 @@
 #![cfg(any(feature = "postgres", feature = "sqlite"))]
 
 mod consts;
-mod generic_row;
 pub mod qb;
 pub use consts::*;
-pub use generic_row::GenericRow;
 
 pub use crate::qb::TableInfo;
 pub use async_trait::async_trait;
@@ -24,7 +22,7 @@ pub use traits::Table;
 #[async_trait]
 impl<T> GenericExecutor<T> for QB<T>
 where
-    T: for<'r> FromRow<'r, Row> + GenericRow + Send + Unpin + std::fmt::Debug,
+    T: for<'r> FromRow<'r, Row> + Send + Unpin + std::fmt::Debug,
 {
     async fn fetch_one_as(mut self, pool: &Pool) -> sqlx::Result<T> {
         self.eager.clear();
