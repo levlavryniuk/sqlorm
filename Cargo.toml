@@ -23,7 +23,7 @@ documentation = "https://docs.rs/sqlorm"
 members = ["sqlorm-core", ".", "sqlorm-macros"]
 
 [workspace.dependencies]
-sqlorm-core = { path = "sqlorm-core", version = "0.*" }
+sqlorm-core = { path = "sqlorm-core", version = "0.3.3" }
 sqlorm-macros = { path = "sqlorm-macros", version = "0.*" }
 async-trait = "0.1.8"
 lazy_static = "1.5"
