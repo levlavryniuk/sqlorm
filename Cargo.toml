@@ -75,5 +75,10 @@ chrono = { version = "0.4", features = ["serde"] }
 uuid = { version = "1.0", features = ["v4", "serde"] }
 serde = { version = "1.0", features = ["derive"] }
 tempfile = "3.8"
-criterion = { version = "0.7", features = ["async_tokio"] }
+criterion = { version = "0.7", features = ["async_tokio", "html_reports"] }
 rand = "0.9"
+
+
+[[bench]]
+name = "test"
+harness = false
