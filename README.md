@@ -1,4 +1,4 @@
-![logo](http://url/to/img.png)
+![logo](https://github.com/levlavryniuk/sqlorm/blob/master/logo.png)
 
 # SQLOrm
 
