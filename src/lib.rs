@@ -20,8 +20,9 @@
 //! - [x] Support for postgres.
 //! - [x] Support for sqlite.
 //! - [x] Support for most common relations (belongs-to, has-many, has-one).
-//! - [ ] Modular system for optional extended functionality (additional ways to query, etc).
-//! - [ ] Smart prelude modules generation.
+//! - [x] Modular system for optional extended functionality (additional ways to query, etc).
+//! - [ ] Soft delete support
+//! - [ ] Combined pk's
 //!
 //!
 //!
