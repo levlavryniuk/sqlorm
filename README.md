@@ -1,3 +1,5 @@
+![logo](http://url/to/img.png)
+
 # SQLOrm
 
 **An ergonomic, lightweight SQL ORM for Rust with type-safe query building and powerful entity relationships.**
@@ -10,13 +12,13 @@ Sqlorm is a modern ORM built on top of [sqlx](https://github.com/launchbadge/sql
 
 ## ✨ Key Features
 
-- **🔒 Type-Safe**: All queries are checked at compile-time
-- **⚡ Zero-Cost Abstraction**: Minimal overhead over raw sqlx
-- **🎯 Macro-Powered**: Rich APIs generated from simple struct definitions
-- **🔗 Relationships**: Support for `belongs_to` and `has_many` relations with eager/lazy loading
-- **⏰ Automatic Timestamps**: Built-in `created_at`/`updated_at` handling
-- **🗃️ Multi-Database**: PostgreSQL and SQLite support
-- **🔍 Powerful Querying**: Fluent query builder with comprehensive filtering
+- ** Type-Safe**: All queries are checked at compile-time
+- ** Zero-Cost Abstraction**: Minimal overhead over raw sqlx
+- ** Macro-Powered**: Rich APIs generated from simple struct definitions
+- ** Relationships**: Support for `belongs_to` and `has_many` relations with eager/lazy loading
+- ** Automatic Timestamps**: Built-in `created_at`/`updated_at` handling
+- ** Multi-Database**: PostgreSQL and SQLite support
+- ** Powerful Querying**: Fluent query builder with comprehensive filtering
 
 ## 🚀 Quick Start
 
