@@ -3,7 +3,6 @@
        alt="logo" 
        width="200" />
 </div>
-<!-- ![logo](https://github.com/levlavryniuk/sqlorm/blob/master/logo.png) -->
 
 # sqlorm
 
@@ -17,7 +16,7 @@ Sqlorm is a modern ORM built on top of [sqlx](https://github.com/launchbadge/sql
 
 ## ✨ Key Features
 
-- ** Type-Safe**: All queries are checked at compile-time
+- ** Type-Safe **: All queries are checked at compile-time
 - ** Zero-Cost Abstraction**: Minimal overhead over raw sqlx
 - ** Macro-Powered**: Rich APIs generated from simple struct definitions
 - ** Relationships**: Support for `belongs_to` and `has_many` relations with eager/lazy loading
