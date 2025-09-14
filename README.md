@@ -5,7 +5,7 @@
 </div>
 <!-- ![logo](https://github.com/levlavryniuk/sqlorm/blob/master/logo.png) -->
 
-# SQLOrm
+# sqlorm
 
 **An ergonomic, lightweight SQL ORM for Rust with type-safe query building and powerful entity relationships.**
 
