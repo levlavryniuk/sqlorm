@@ -23,6 +23,7 @@
 //! - [x] Modular system for optional extended functionality (additional ways to query, etc).
 //! - [ ] Soft delete support
 //! - [ ] Combined pk's
+//! - [ ] Transactions
 //!
 //!
 //!
