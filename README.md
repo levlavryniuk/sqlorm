@@ -1,4 +1,5 @@
-![logo](https://github.com/levlavryniuk/sqlorm/blob/master/logo.png)
+<img src="https://github.com/levlavryniuk/sqlorm/blob/master/logo.png" alt="logo" width="200"/>
+<!-- ![logo](https://github.com/levlavryniuk/sqlorm/blob/master/logo.png) -->
 
 # SQLOrm
 
