@@ -6,7 +6,7 @@
 [![Documentation](https://docs.rs/sqlorm/badge.svg)](https://docs.rs/sqlorm)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/levlavryniuk/sqlorm/blob/main/LICENSE)
 
-SQLOrm is a modern ORM built on top of [sqlx](https://github.com/launchbadge/sqlx) that provides compile-time safety, powerful macro-generated APIs, and an intuitive query builder. It's designed for developers who want the performance of sqlx with the convenience of an ORM.
+Sqlorm is a modern ORM built on top of [sqlx](https://github.com/launchbadge/sqlx) that provides compile-time safety, powerful macro-generated APIs, and an intuitive query builder. It's designed for developers who want the performance of sqlx with the convenience of an ORM.
 
 ## ✨ Key Features
 

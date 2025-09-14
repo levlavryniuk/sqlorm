@@ -13,6 +13,8 @@
 //! - **Type-safe (mostly)**: Since 90% of code is geneated at compile time, all types are checked at compile time.
 //! - **Performant**: Sqlorm introduces a minimal overhead over sqlx (thanks to macros).
 //!
+//! To start, look at [`sqlorm::table`](https://docs.rs/sqlorm/latest/sqlorm/attr.table.html)
+//!
 //! ## Todo list:
 //! - [x] Generic, type-safe query builder for each entity.
 //! - [x] Support for postgres.

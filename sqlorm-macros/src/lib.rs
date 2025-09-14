@@ -52,6 +52,28 @@ pub fn entity(input: TokenStream) -> TokenStream {
 /// }
 /// ```
 ///
+/// # **⚠️ Important:**
+/// [`sqlorm::table`] attribute must go before any other attributes, otherwise code won't compile.
+/// Incorrect usage:
+/// ```rust,ignore
+/// #[derive(Debug)]
+/// #[table(name = "app_users")] // incorrect: placed after derive attr
+/// struct User {
+///     #[sql(pk)]
+///     id: i64,
+///     email: String,
+/// }
+/// ```
+/// Correct usage:
+/// ```rust,ignore
+/// #[table(name = "app_users")] // correct: placed before derive attr
+/// #[derive(Debug)]
+/// struct User {
+///     #[sql(pk)]
+///     id: i64,
+///     email: String,
+/// }
+/// ```
 /// After applying this macro, you can use standard ORM operations:
 /// - `user.save(&pool).await`
 /// - `User::query().filter(...).fetch_all(&pool).await`

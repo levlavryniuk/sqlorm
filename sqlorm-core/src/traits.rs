@@ -79,9 +79,6 @@ pub trait FromAliasedRow {
 /// let many: Vec<(i32, String)> = qb2.fetch_all_as(pool).await?;
 /// # Ok(())
 /// # }
-/// ```
-///
-/// ```
 #[async_trait]
 pub trait GenericExecutor<T> {
     /// Executes the query and returns a single row mapped as `T`.
