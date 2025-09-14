@@ -26,9 +26,9 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-sqlorm = { version = "0.4", features = ["postgres", "uuid", "chrono"] }
+sqlorm = { version = "0.4", features = ["postgres", "uuid" ] }
 # Or for SQLite:
-# sqlorm = { version = "0.4", features = ["sqlite", "uuid", "chrono"] }
+# sqlorm = { version = "0.4", features = ["sqlite", "uuid" ] }
 
 sqlx = { version = "0.8", features = ["postgres", "runtime-tokio-rustls"] }
 tokio = { version = "1.0", features = ["full"] }
@@ -40,12 +40,13 @@ serde = { version = "1.0", features = ["derive"] }
 ### Database Support
 
 Choose **one** feature:
+
 - `postgres` - PostgreSQL support
 - `sqlite` - SQLite support
 
 Optional features:
+
 - `uuid` - UUID support
-- `chrono` - DateTime support
 - `extra-traits` - Additional trait derivations
 
 ### Your First Entity
@@ -59,18 +60,18 @@ use chrono::{DateTime, Utc};
 pub struct User {
     #[sql(pk)]
     pub id: i64,
-    
+
     #[sql(unique)]
     pub email: String,
-    
+
     pub username: String,
     pub first_name: String,
     pub last_name: String,
     pub bio: Option<String>,
-    
+
     #[sql(timestamp(created_at, chrono::Utc::now()))]
     pub created_at: DateTime<Utc>,
-    
+
     #[sql(timestamp(updated_at, chrono::Utc::now()))]
     pub updated_at: DateTime<Utc>,
 }
@@ -85,9 +86,8 @@ use sqlorm::prelude::*;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Connect to database
     let pool = Pool::connect("postgres://user:pass@localhost/db").await?;
-    
+
     // CREATE - Insert a new user
     let user = User {
         email: "alice@example.com".to_string(),
@@ -97,31 +97,31 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         bio: Some("Rust developer".to_string()),
         ..Default::default()
     }
-    .save(&pool)  // Returns the inserted user with generated ID
+    .save(&pool)  // Returns the inserted user with generated ID and timestamp fields
     .await?;
-    
+
     println!("Created user with ID: {}", user.id);
-    
+
     // READ - Find by primary key
     let found_user = User::find_by_id(&pool, user.id)
         .await?
         .expect("User should exist");
-    
-    // READ - Find by unique field
+
+    // READ - Find by unique field. Note, this requires `extra-traits` feature
     let found_by_email = User::find_by_email(&pool, "alice@example.com".to_string())
         .await?
         .expect("User should exist");
-    
+
     // UPDATE - Modify and save
     let mut updated_user = found_user;
     updated_user.bio = Some("Senior Rust developer".to_string());
     let updated_user = updated_user.save(&pool).await?;  // updated_at auto-updated
-    
+
     // DELETE - Using raw sqlx for now
     sqlx::query!("DELETE FROM users WHERE id = $1", user.id)
         .execute(&pool)
         .await?;
-    
+
     Ok(())
 }
 ```
@@ -203,14 +203,14 @@ Define and work with entity relationships:
 pub struct Post {
     #[sql(pk)]
     pub id: i64,
-    
+
     pub title: String,
     pub content: String,
-    
+
     // Foreign key relationship
     #[sql(relation(belongs_to -> User, relation = "author", on = id))]
     pub user_id: i64,
-    
+
     #[sql(timestamp(created_at, chrono::Utc::now()))]
     pub created_at: DateTime<Utc>,
 }
@@ -222,7 +222,7 @@ pub struct User {
     // Define reverse relationship
     #[sql(relation(has_many -> Post, relation = "posts", on = user_id))]
     pub id: i64,
-    
+
     // ... other fields
 }
 
@@ -233,7 +233,7 @@ let user_posts = user.posts(&pool).await?;  // Separate query
 let post = Post::find_by_id(&pool, 1).await?.expect("Post exists");
 let author = post.author(&pool).await?.expect("Author exists");
 
-// Eager loading - fetch related data in one query  
+// Eager loading - fetch related data in one query
 let user_with_posts = User::query()
     .filter(User::ID.eq(1))
     .with_posts()  // JOIN posts in single query
@@ -261,17 +261,17 @@ SQLOrm automatically handles timestamp fields:
 pub struct Article {
     #[sql(pk)]
     pub id: i64,
-    
+
     pub title: String,
-    
+
     // Automatically set on insert
     #[sql(timestamp(created_at, chrono::Utc::now()))]
     pub created_at: DateTime<Utc>,
-    
+
     // Automatically updated on save
     #[sql(timestamp(updated_at, chrono::Utc::now()))]
     pub updated_at: DateTime<Utc>,
-    
+
     // Optional soft delete timestamp
     #[sql(timestamp(deleted_at, chrono::Utc::now()))]
     pub deleted_at: Option<DateTime<Utc>>,
@@ -298,7 +298,7 @@ use uuid::Uuid;
 
 // Auto-incrementing integer
 #[table]
-#[derive(Debug, Clone, Default)]  
+#[derive(Debug, Clone, Default)]
 pub struct User {
     #[sql(pk)]
     pub id: i64,  // BIGSERIAL in PostgreSQL
@@ -333,14 +333,14 @@ pub struct Setting {
 pub struct Product {
     #[sql(pk)]
     pub id: i64,
-    
+
     pub name: String,
     pub description: Option<String>,    // Nullable text
     pub price: f64,                     // Numeric
     pub is_active: bool,                // Boolean
     pub tags: Option<Vec<String>>,      // JSON array (PostgreSQL)
     pub metadata: Option<serde_json::Value>,  // JSON
-    
+
     #[sql(timestamp(created_at, chrono::Utc::now()))]
     pub created_at: DateTime<Utc>,
 }
@@ -363,7 +363,7 @@ SQLOrm is built with a modular architecture:
 ```
 
 - **`sqlorm`**: Main crate with public API
-- **`sqlorm-core`**: Query builder and core traits  
+- **`sqlorm-core`**: Query builder and core traits
 - **`sqlorm-macros`**: Procedural macros for code generation
 - **`sqlx`**: Underlying database driver
 
@@ -372,24 +372,27 @@ SQLOrm is built with a modular architecture:
 The `#[table]` macro generates extensive APIs for each entity:
 
 ### Core Methods
+
 - `save()` - Insert or update (smart detection)
-- `insert()` - Force insert  
+- `insert()` - Force insert
 - `update()` - Force update
 - `find_by_id()` - Find by primary key
 - `find_by_<unique_field>()` - Find by unique fields
 
 ### Query Builder
+
 - `query()` - Start query builder
 - `filter()` - Add WHERE conditions
-- `select()` - Specify columns to fetch  
+- `select()` - Specify columns to fetch
 - `fetch_one()` - Get single result
 - `fetch_all()` - Get all results
 - `fetch_one_as()` - Get result as tuple/custom type
 - `fetch_all_as()` - Get results as Vec of tuples/custom type
 
 ### Filter Operators
+
 - `eq()` / `ne()` - Equality / Not equal
-- `gt()` / `ge()` - Greater than / Greater equal  
+- `gt()` / `ge()` - Greater than / Greater equal
 - `lt()` / `le()` - Less than / Less equal
 - `like()` - Pattern matching
 - `in_()` / `not_in()` - List membership
@@ -397,10 +400,11 @@ The `#[table]` macro generates extensive APIs for each entity:
 - `is_null()` / `is_not_null()` - NULL checks
 
 ### Relationships (when defined)
+
 - `<relation_name>()` - Lazy load related entities
 - `with_<relation_name>()` - Eager load in query builder
 
-## 📋 Attribute Reference  
+## 📋 Attribute Reference
 
 ### Table Attributes
 
@@ -425,7 +429,7 @@ The `#[table]` macro generates extensive APIs for each entity:
 # Test with PostgreSQL
 cargo test --features postgres
 
-# Test with SQLite  
+# Test with SQLite
 cargo test --features sqlite
 
 # Run examples
@@ -439,7 +443,7 @@ cargo run --example relations --features "postgres uuid chrono"
 Check the [`examples/`](./examples) directory for complete working examples:
 
 - **[`basic`](./examples/basic/main.rs)**: Simple CRUD operations
-- **[`crud`](./examples/crud/main.rs)**: Comprehensive CRUD with multiple entities  
+- **[`crud`](./examples/crud/main.rs)**: Comprehensive CRUD with multiple entities
 - **[`relations`](./examples/relations/main.rs)**: Working with entity relationships
 
 ## 🤝 Contributing
@@ -451,7 +455,7 @@ Contributions are welcome! Please feel free to submit a Pull Request. Make sure 
 3. Add tests for new features
 4. Update documentation as needed
 
-## 📝 License  
+## 📝 License
 
 This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
 
