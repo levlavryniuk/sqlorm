@@ -74,7 +74,7 @@ pub fn save(es: &EntityStruct) -> TokenStream {
         .filter(|f| !f.is_pk() || is_uuid_type(&f.ty))
         .map(|f| &f.ident)
         .collect();
-    
+
     let non_pk_fields: Vec<&Ident> = es
         .fields
         .iter()
@@ -87,12 +87,12 @@ pub fn save(es: &EntityStruct) -> TokenStream {
         .map(|id| id.to_string().to_lowercase())
         .collect::<Vec<_>>()
         .join(", ");
-    
+
     let non_pk_cols = non_pk_fields
         .iter()
         .map(|id| id.to_string().to_lowercase())
         .collect::<Vec<_>>();
-    
+
     let pk_col = pk_ident.to_string().to_lowercase();
 
     let insert_placeholders_str = {
@@ -144,7 +144,7 @@ pub fn save(es: &EntityStruct) -> TokenStream {
         "INSERT INTO {} ({}) VALUES ({}) RETURNING *",
         table_name, insert_cols, insert_placeholders_str
     );
-    
+
     let update_sql = format!(
         "UPDATE {} SET {} WHERE {} = {} RETURNING *",
         table_name, update_set_clause, pk_col, where_placeholder_str
@@ -187,12 +187,15 @@ pub fn save(es: &EntityStruct) -> TokenStream {
         .map(|f| {
             let ident = &f.ident;
             let ty = &f.ty;
+
+            #[cfg(feature = "uuid")]
             quote! {
-                #[cfg(feature = "uuid")]
                 if <#ty as Default>::default() == self.#ident {
                     self.#ident = uuid::Uuid::new_v4();
                 }
             }
+            #[cfg(not(feature = "uuid"))]
+            quote! {}
         });
 
     quote! {

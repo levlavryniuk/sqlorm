@@ -21,6 +21,7 @@
 //! - [x] Support for sqlite.
 //! - [x] Support for most common relations (belongs-to, has-many, has-one).
 //! - [x] Modular system for optional extended functionality (additional ways to query, etc).
+//! - [ ] Partial update support ( a big one )
 //! - [ ] Soft delete support
 //! - [ ] Combined pk's
 //! - [ ] Transactions
