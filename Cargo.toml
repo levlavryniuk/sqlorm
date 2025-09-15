@@ -82,3 +82,9 @@ rand = "0.9"
 [[bench]]
 name = "test"
 harness = false
+required-features = ["sqlite"]
+
+[[bench]]
+name = "relationships"
+harness = false
+required-features = ["sqlite"]
