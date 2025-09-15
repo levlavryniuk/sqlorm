@@ -8,10 +8,7 @@ use quote::quote;
 use sqlorm_core::with_quotes;
 use syn::{Ident, Type};
 
-use crate::{
-    entity::{EntityStruct, FieldKind, TimestampKind},
-    sql::{generate_placeholders, generate_single_placeholder},
-};
+use crate::entity::{EntityStruct, FieldKind, TimestampKind};
 
 /// Checks if a type is a UUID type that should be auto-generated.
 ///
@@ -68,8 +65,6 @@ pub fn save(es: &EntityStruct) -> TokenStream {
 
     let pk_field = &es.pk;
     let pk_ident = &pk_field.ident;
-
-    let pk_name = pk_ident.to_string().to_lowercase();
     let pk_type = &pk_field.ty;
 
     let insert_fields: Vec<&Ident> = es
@@ -79,32 +74,81 @@ pub fn save(es: &EntityStruct) -> TokenStream {
         .filter(|f| !f.is_pk() || is_uuid_type(&f.ty))
         .map(|f| &f.ident)
         .collect();
-    let insert_names: Vec<String> = insert_fields
-        .iter()
-        .map(|id| id.to_string().to_lowercase())
-        .collect();
-
+    
     let non_pk_fields: Vec<&Ident> = es
         .fields
         .iter()
         .filter(|f| !f.is_pk() && !f.is_ignored())
         .map(|f| &f.ident)
         .collect();
-    let non_pk_names: Vec<String> = non_pk_fields
+
+    let insert_cols = insert_fields
         .iter()
         .map(|id| id.to_string().to_lowercase())
-        .collect();
-
-    let insert_placeholders = generate_placeholders(insert_fields.len());
-
-    let update_placeholders = generate_placeholders(non_pk_fields.len());
-    let update_assignments: Vec<String> = non_pk_names
+        .collect::<Vec<_>>()
+        .join(", ");
+    
+    let non_pk_cols = non_pk_fields
         .iter()
-        .zip(update_placeholders.iter())
-        .map(|(name, placeholder)| format!("{} = {}", name, placeholder))
-        .collect();
+        .map(|id| id.to_string().to_lowercase())
+        .collect::<Vec<_>>();
+    
+    let pk_col = pk_ident.to_string().to_lowercase();
 
-    let where_placeholder = generate_single_placeholder(non_pk_fields.len() + 1);
+    let insert_placeholders_str = {
+        #[cfg(feature = "postgres")]
+        {
+            (1..=insert_fields.len())
+                .map(|i| format!("${}", i))
+                .collect::<Vec<_>>()
+                .join(", ")
+        }
+        #[cfg(not(feature = "postgres"))]
+        {
+            vec!["?"; insert_fields.len()].join(", ")
+        }
+    };
+
+    let update_set_clause = {
+        #[cfg(feature = "postgres")]
+        {
+            non_pk_cols
+                .iter()
+                .enumerate()
+                .map(|(i, name)| format!("{} = ${}", name, i + 1))
+                .collect::<Vec<_>>()
+                .join(", ")
+        }
+        #[cfg(not(feature = "postgres"))]
+        {
+            non_pk_cols
+                .iter()
+                .map(|name| format!("{} = ?", name))
+                .collect::<Vec<_>>()
+                .join(", ")
+        }
+    };
+
+    let where_placeholder_str = {
+        #[cfg(feature = "postgres")]
+        {
+            format!("${}", non_pk_fields.len() + 1)
+        }
+        #[cfg(not(feature = "postgres"))]
+        {
+            "?".to_string()
+        }
+    };
+
+    let insert_sql = format!(
+        "INSERT INTO {} ({}) VALUES ({}) RETURNING *",
+        table_name, insert_cols, insert_placeholders_str
+    );
+    
+    let update_sql = format!(
+        "UPDATE {} SET {} WHERE {} = {} RETURNING *",
+        table_name, update_set_clause, pk_col, where_placeholder_str
+    );
 
     let created_assign = es
         .fields
@@ -115,9 +159,10 @@ pub fn save(es: &EntityStruct) -> TokenStream {
             if let FieldKind::Timestamp(TimestampKind::Created { factory }) = &f.kind {
                 quote! { self.#ident = #factory; }
             } else {
-                unreachable!()
+                quote! {}
             }
-        });
+        })
+        .unwrap_or_else(|| quote! {});
 
     let updated_assign_insert = es
         .fields
@@ -128,13 +173,14 @@ pub fn save(es: &EntityStruct) -> TokenStream {
             if let FieldKind::Timestamp(TimestampKind::Updated { factory }) = &f.kind {
                 quote! { self.#ident = #factory; }
             } else {
-                unreachable!()
+                quote! {}
             }
-        });
+        })
+        .unwrap_or_else(|| quote! {});
 
     let updated_assign_update = updated_assign_insert.clone();
 
-    let uuid_assigns: Vec<TokenStream> = es
+    let uuid_assigns = es
         .fields
         .iter()
         .filter(|f| !f.is_ignored() && is_uuid_type(&f.ty))
@@ -147,8 +193,7 @@ pub fn save(es: &EntityStruct) -> TokenStream {
                     self.#ident = uuid::Uuid::new_v4();
                 }
             }
-        })
-        .collect();
+        });
 
     quote! {
         #[automatically_derived]
@@ -193,16 +238,7 @@ pub fn save(es: &EntityStruct) -> TokenStream {
                 #created_assign
                 #updated_assign_insert
 
-                let query_str = format!(
-                    r#"INSERT INTO {table} ({cols})
-                           VALUES ({placeholders})
-                           RETURNING *"#,
-                    table = #table_name,
-                    cols = [#(#insert_names),*].join(", "),
-                    placeholders = [#(#insert_placeholders),*].join(", "),
-                );
-
-                ::sqlorm::sqlx::query_as::<_, #s_ident>(&query_str)
+                ::sqlorm::sqlx::query_as::<_, #s_ident>(#insert_sql)
                     #(.bind(&self.#insert_fields))*
                     .fetch_one(executor)
                     .await
@@ -240,18 +276,7 @@ pub fn save(es: &EntityStruct) -> TokenStream {
             {
                 #updated_assign_update
 
-                let query = format!(
-                    r#"UPDATE {table}
-                           SET {updates}
-                           WHERE {pk} = {where_clause}
-                           RETURNING *"#,
-                    table = #table_name,
-                    updates = [#(#update_assignments),*].join(", "),
-                    pk = #pk_name,
-                    where_clause = #where_placeholder,
-                );
-
-                ::sqlorm::sqlx::query_as::<_, #s_ident>(&query)
+                ::sqlorm::sqlx::query_as::<_, #s_ident>(#update_sql)
                     #(.bind(&self.#non_pk_fields))*
                     .bind(&self.#pk_ident)
                     .fetch_one(executor)
