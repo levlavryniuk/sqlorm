@@ -25,7 +25,7 @@ pub struct Condition {
 /// This trait abstracts over different types that implement
 /// [`BindValue`] and allows them to be stored in a type-erased form
 /// (`Box<dyn AnyValue>`).
-pub trait AnyValue: Send + Sync {
+pub trait AnyValue: Send + Sync + std::fmt::Debug {
     /// Bind this value into the given [`QueryBuilder`].
     fn bind(&self, builder: &mut QueryBuilder<'static, Driver>);
 }

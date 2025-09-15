@@ -47,6 +47,7 @@ extra-traits = ["sqlorm-macros/extra-traits"]
 uuid = ["sqlorm-core/uuid", "sqlorm-macros/uuid"]
 migrate = ["sqlx/migrate"]
 raw-sqlx = []
+compile-checked = ["sqlorm-macros/compile-checked"]
 
 
 [package.metadata.docs.rs]

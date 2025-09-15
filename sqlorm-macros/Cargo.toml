@@ -17,6 +17,7 @@ sqlite = ["sqlorm-core/sqlite"]
 extra-traits = []
 uuid = ["sqlorm-core/uuid"]
 postgres = ["sqlorm-core/postgres"]
+compile-checked = []
 
 
 [dependencies]

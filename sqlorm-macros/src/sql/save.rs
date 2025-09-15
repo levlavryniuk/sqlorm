@@ -68,8 +68,6 @@ pub fn save(es: &EntityStruct) -> TokenStream {
 
     let pk_field = &es.pk;
     let pk_ident = &pk_field.ident;
-
-    let pk_name = pk_ident.to_string().to_lowercase();
     let pk_type = &pk_field.ty;
 
     let insert_fields: Vec<&Ident> = es
@@ -79,6 +77,7 @@ pub fn save(es: &EntityStruct) -> TokenStream {
         .filter(|f| !f.is_pk() || is_uuid_type(&f.ty))
         .map(|f| &f.ident)
         .collect();
+
     let insert_names: Vec<String> = insert_fields
         .iter()
         .map(|id| id.to_string().to_lowercase())
@@ -90,21 +89,41 @@ pub fn save(es: &EntityStruct) -> TokenStream {
         .filter(|f| !f.is_pk() && !f.is_ignored())
         .map(|f| &f.ident)
         .collect();
+
     let non_pk_names: Vec<String> = non_pk_fields
         .iter()
         .map(|id| id.to_string().to_lowercase())
         .collect();
 
-    let insert_placeholders = generate_placeholders(insert_fields.len());
+    let insert_sql = {
+        let cols = insert_names.join(", ");
+        let placeholders = (1..=insert_fields.len())
+            .map(|i| format!("${}", i))
+            .collect::<Vec<_>>()
+            .join(", ");
+        format!(
+            "INSERT INTO {} ({}) VALUES ({}) RETURNING *",
+            table_name, cols, placeholders
+        )
+    };
 
-    let update_placeholders = generate_placeholders(non_pk_fields.len());
-    let update_assignments: Vec<String> = non_pk_names
-        .iter()
-        .zip(update_placeholders.iter())
-        .map(|(name, placeholder)| format!("{} = {}", name, placeholder))
-        .collect();
-
-    let where_placeholder = generate_single_placeholder(non_pk_fields.len() + 1);
+    let update_sql = {
+        let assigns = non_pk_names
+            .iter()
+            .enumerate()
+            .map(|(i, col)| format!("{} = ${}", col, i + 1))
+            .collect::<Vec<_>>()
+            .join(", ");
+        let where_clause = format!(
+            "{} = ${}",
+            pk_ident.to_string().to_lowercase(),
+            non_pk_fields.len() + 1
+        );
+        format!(
+            "UPDATE {} SET {} WHERE {} RETURNING *",
+            table_name, assigns, where_clause
+        )
+    };
 
     let created_assign = es
         .fields
@@ -153,38 +172,6 @@ pub fn save(es: &EntityStruct) -> TokenStream {
     quote! {
         #[automatically_derived]
         impl #s_ident {
-            /// Inserts a new record into the database.
-            ///
-            /// This method forces an INSERT operation regardless of the primary key value.
-            /// It automatically populates timestamp fields marked with:
-            /// - `#[sql(timestamp(created_at, factory_fn()))]` - Set using custom factory
-            /// - `#[sql(timestamp(updated_at, factory_fn()))]` - Set using custom factory
-            ///
-            /// Takes ownership of self and returns a new instance with the inserted record data,
-            /// including any auto-generated primary key values.
-            ///
-            /// # Returns
-            ///
-            /// Returns `Ok(Self)` with the inserted record data, or an `sqlx::Error` if the
-            /// insertion fails (e.g., due to constraint violations, database connection issues).
-            ///
-            /// # Example
-            ///
-            /// if the primary key is the default value , the record will be inserted, otherwise
-            /// it will be updated.
-            ///
-            /// ```ignore
-            /// let user = User {
-            ///     email: "user@example.com".to_string(),
-            ///     name: "John Doe".to_string(),
-            ///     created_at: DateTime::default(), // Will be auto-populated
-            ///     updated_at: DateTime::default(), // Will be auto-populated
-            ///     ..Default::default() // Will be auto-populated
-            /// };
-            ///
-            /// let inserted_user = user.insert(&pool).await?;
-            /// println!("Inserted user with ID: {}", inserted_user.id);
-            /// ```
             pub async fn insert<'a, E>(mut self, executor: E) -> sqlx::Result<Self>
             where
                 E: ::sqlorm::sqlx::Executor<'a, Database = ::sqlorm::Driver>,
@@ -193,109 +180,52 @@ pub fn save(es: &EntityStruct) -> TokenStream {
                 #created_assign
                 #updated_assign_insert
 
-                let query_str = format!(
-                    r#"INSERT INTO {table} ({cols})
-                           VALUES ({placeholders})
-                           RETURNING *"#,
-                    table = #table_name,
-                    cols = [#(#insert_names),*].join(", "),
-                    placeholders = [#(#insert_placeholders),*].join(", "),
-                );
-
-                ::sqlorm::sqlx::query_as::<_, #s_ident>(&query_str)
-                    #(.bind(&self.#insert_fields))*
+                #[cfg(feature = "compile-checked")]
+                {
+                    ::sqlorm::sqlx::query_as!(
+                        #s_ident,
+                        #insert_sql,
+                        #(self.#insert_fields),*
+                    )
                     .fetch_one(executor)
                     .await
+                }
+                #[cfg(not(feature = "compile-checked"))]
+                {
+                    let mut query = ::sqlorm::sqlx::query_as::<_, #s_ident>(#insert_sql);
+                    #(query = query.bind(&self.#insert_fields);)*
+                    query.fetch_one(executor).await
+                }
             }
 
-            /// Updates an existing record in the database.
-            ///
-            /// This method forces an UPDATE operation using the primary key to identify the record.
-            /// It automatically updates timestamp fields marked with:
-            /// - `#[sql(timestamp(updated_at, factory_fn()))]` - Set using custom factory
-            ///
-            /// Takes ownership of self and returns a new instance with the updated record data from the database.
-            ///
-            /// # Returns
-            ///
-            /// Returns `Ok(Self)` with the updated record data, or an `sqlx::Error` if the
-            /// update fails (e.g., record not found, constraint violations, database connection issues).
-            ///
-            /// # Example
-            ///
-            /// ```ignore
-            /// let user = User::find_by_id(&pool, 1).await?.expect("User not found");
-            /// let mut user_to_update = user;
-            /// user_to_update.name = "Updated Name".to_string();
-            ///
-            /// let updated_user = user_to_update.update(&pool).await?;
-            /// println!("Updated user: {}", updated_user.name);
-            /// ```
-            pub async fn update<'a, E>(
-                mut self,
-                executor: E
-            ) -> ::sqlorm::sqlx::Result<Self>
+            pub async fn update<'a, E>(mut self, executor: E) -> sqlx::Result<Self>
             where
-                E: ::sqlorm::sqlx::Executor<'a, Database = ::sqlorm::Driver>
+                E: ::sqlorm::sqlx::Executor<'a, Database = ::sqlorm::Driver>,
             {
                 #updated_assign_update
-
-                let query = format!(
-                    r#"UPDATE {table}
-                           SET {updates}
-                           WHERE {pk} = {where_clause}
-                           RETURNING *"#,
-                    table = #table_name,
-                    updates = [#(#update_assignments),*].join(", "),
-                    pk = #pk_name,
-                    where_clause = #where_placeholder,
-                );
-
-                ::sqlorm::sqlx::query_as::<_, #s_ident>(&query)
-                    #(.bind(&self.#non_pk_fields))*
-                    .bind(&self.#pk_ident)
+                #[cfg(feature = "compile-checked")]
+                {
+                    ::sqlorm::sqlx::query_as!(
+                        #s_ident,
+                        #update_sql,
+                        #(self.#non_pk_fields),*,
+                        self.#pk_ident
+                    )
                     .fetch_one(executor)
                     .await
+                }
+                #[cfg(not(feature = "compile-checked"))]
+                {
+                    let mut query = ::sqlorm::sqlx::query_as::<_, #s_ident>(#update_sql);
+                    #(query = query.bind(&self.#non_pk_fields);)*
+                    query = query.bind(&self.#pk_ident);
+                    query.fetch_one(executor).await
+                }
             }
 
-            /// Saves the record to the database (insert if new, update if existing).
-            ///
-            /// This method automatically determines whether to perform an INSERT or UPDATE:
-            /// - If the primary key equals the type's default value, performs an INSERT
-            /// - Otherwise, performs an UPDATE
-            ///
-            /// This is the recommended method for most save operations as it handles both
-            /// creation and modification scenarios automatically.
-            ///
-            /// # Returns
-            ///
-            /// Returns `Ok(Self)` with the saved record data, or an `sqlx::Error` if the
-            /// operation fails.
-            ///
-            /// # Example
-            ///
-            /// ```rust ignore
-            /// // New record (primary key is default/0)
-            /// let new_user = User {
-            ///     id: 0,
-            ///     email: "new@example.com".to_string(),
-            ///     name: "New User".to_string(),
-            ///     created_at: DateTime::default(),
-            ///     updated_at: DateTime::default(),
-            /// };
-            /// let saved = new_user.save(&pool).await?; // Will INSERT
-            ///
-            /// // Existing record (primary key is not default)
-            /// let mut existing_user = User::query().fetch_one(&pool).await?.unwrap();
-            /// existing_user.name = "Modified".to_string();
-            /// let updated = existing_user.save(&pool).await?; // Will UPDATE
-            /// ```
-            pub async fn save<'a, E>(
-                self,
-                executor: E
-            ) -> ::sqlorm::sqlx::Result<Self>
+            pub async fn save<'a, E>(self, executor: E) -> sqlx::Result<Self>
             where
-                E: ::sqlorm::sqlx::Executor<'a, Database = ::sqlorm::Driver>
+                E: ::sqlorm::sqlx::Executor<'a, Database = ::sqlorm::Driver>,
             {
                 if <#pk_type as Default>::default() == self.#pk_ident {
                     self.insert(executor).await

@@ -25,6 +25,7 @@ where
     T: for<'r> FromRow<'r, Row> + Send + Unpin + std::fmt::Debug,
 {
     async fn fetch_one_as(mut self, pool: &Pool) -> sqlx::Result<T> {
+        self.debug_query();
         self.eager.clear();
         self.batch.clear();
         let row = self.build_query().build().fetch_one(pool).await?;
@@ -32,6 +33,7 @@ where
     }
 
     async fn fetch_all_as(self, pool: &Pool) -> sqlx::Result<Vec<T>> {
+        self.debug_query();
         let rows = self.build_query().build().fetch_all(pool).await?;
         rows.iter().map(T::from_row).collect()
     }

@@ -31,6 +31,8 @@ pub struct QB<T: std::fmt::Debug> {
     pub batch: Vec<JoinSpec>,
     /// WHERE clause conditions combined with AND.
     pub filters: Vec<Condition>,
+    /// Debug flag to enable query debugging output.
+    pub debug_enabled: bool,
     _marker: std::marker::PhantomData<T>,
 }
 #[derive(Clone, Debug)]
@@ -71,6 +73,7 @@ impl<T: std::fmt::Debug> QB<T> {
             eager: Vec::new(),
             batch: Vec::new(),
             filters: Vec::new(),
+            debug_enabled: false,
             _marker: std::marker::PhantomData,
         }
     }
@@ -95,6 +98,7 @@ impl<T: std::fmt::Debug> QB<T> {
             eager: self.eager,
             batch: self.batch,
             filters: self.filters,
+            debug_enabled: self.debug_enabled,
             _marker: std::marker::PhantomData,
         }
     }
@@ -130,6 +134,33 @@ impl<T: std::fmt::Debug> QB<T> {
     pub fn filter(mut self, cond: Condition) -> Self {
         self.filters.push(cond);
         self
+    }
+
+    /// Enable debug mode for this query, which will print the generated SQL and bind values.
+    pub fn debug(mut self) -> Self {
+        self.debug_enabled = true;
+        self
+    }
+
+    /// Print debug information about the query if debug mode is enabled.
+    pub fn debug_query(&self) {
+        if self.debug_enabled {
+            let query_builder = self.build_query();
+            let sql = query_builder.sql();
+            
+            println!("[SQLOrm Debug] SQL: {}", sql);
+            
+            if !self.filters.is_empty() {
+                println!("[SQLOrm Debug] Parameters:");
+                let mut param_index = 0;
+                for condition in &self.filters {
+                    for value in &condition.values {
+                        param_index += 1;
+                        println!("[SQLOrm Debug]   ${}: {:?}", param_index, value);
+                    }
+                }
+            }
+        }
     }
 
     fn build_joins(&self) -> String {

@@ -138,6 +138,7 @@ pub fn executor_trait(es: &crate::EntityStruct) -> proc_macro2::TokenStream {
             where
                 A: Send + ::sqlorm::sqlx::Acquire<'a, Database =::sqlorm::Driver>,
             {
+                self.debug_query();
                 let mut conn = acquirer.acquire().await?;
 
                 if self.eager.is_empty() && self.batch.is_empty() {
@@ -159,6 +160,7 @@ pub fn executor_trait(es: &crate::EntityStruct) -> proc_macro2::TokenStream {
             where
                 A: Send + ::sqlorm::sqlx::Acquire<'a, Database =::sqlorm::Driver>,
             {
+                self.debug_query();
                 let mut conn = acquirer.acquire().await?;
 
                 if self.eager.is_empty() && self.batch.is_empty() {
@@ -187,6 +189,7 @@ pub fn executor_trait(es: &crate::EntityStruct) -> proc_macro2::TokenStream {
             where
                 A: Send + ::sqlorm::sqlx::Acquire<'a, Database =::sqlorm::Driver>,
             {
+                self.debug_query();
                 let mut conn = acquirer.acquire().await?;
                 let rows = self.build_query().build().fetch_all(&mut *conn).await?;
                 let mut results = Vec::new();
