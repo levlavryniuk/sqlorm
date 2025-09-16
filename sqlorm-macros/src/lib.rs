@@ -10,6 +10,7 @@ mod traits;
 use crate::entity::EntityStruct;
 mod entity;
 mod qb;
+mod sb;
 mod sql;
 
 mod attrs;

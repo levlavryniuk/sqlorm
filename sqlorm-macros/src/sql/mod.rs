@@ -10,6 +10,7 @@ use crate::entity::EntityStruct;
 
 mod find;
 mod save;
+mod update;
 
 /// Generates all SQL methods for an entity.
 ///
@@ -27,4 +28,3 @@ pub fn sql(es: &EntityStruct) -> TokenStream {
         #_find_unique
     }
 }
-

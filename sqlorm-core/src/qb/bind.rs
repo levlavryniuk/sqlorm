@@ -2,7 +2,7 @@ use crate::Driver;
 use std::fmt::Debug;
 
 pub trait BindValue:
-    for<'q> sqlx::Encode<'q, Driver> + Debug + sqlx::Type<Driver> + Send + Sync + 'static
+    for<'lev> sqlx::Encode<'lev, Driver> + Debug + sqlx::Type<Driver> + Send + Sync + 'static
 {
 }
 

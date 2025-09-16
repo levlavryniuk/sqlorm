@@ -263,11 +263,10 @@ pub fn save(es: &EntityStruct) -> TokenStream {
             /// # Example
             ///
             /// ```ignore
-            /// let user = User::find_by_id(&pool, 1).await?.expect("User not found");
-            /// let mut user_to_update = user;
-            /// user_to_update.name = "Updated Name".to_string();
+            /// let mut user = User::find_by_id(&pool, 1).await?.expect("User not found");
+            /// user.name = "Updated Name".to_string();
             ///
-            /// let updated_user = user_to_update.update(&pool).await?;
+            /// let updated_user = user.update(&pool).await?;
             /// println!("Updated user: {}", updated_user.name);
             /// ```
             pub async fn update<'a, E>(
@@ -334,3 +333,4 @@ pub fn save(es: &EntityStruct) -> TokenStream {
         }
     }
 }
+// user.update_fields(vec![&User::NAME, &User::LAST_NAME]).await

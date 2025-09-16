@@ -1,7 +1,9 @@
+use crate::Driver;
 use crate::Pool;
 use crate::Row;
 use crate::TableInfo;
 use async_trait::async_trait;
+use sqlx::Acquire;
 
 /// Describes a database table and its metadata used by the query builder.
 ///
@@ -85,4 +87,9 @@ pub trait GenericExecutor<T> {
     async fn fetch_one_as(self, pool: &Pool) -> sqlx::Result<T>;
     /// Executes the query and returns all rows mapped as `T`.
     async fn fetch_all_as(self, pool: &Pool) -> sqlx::Result<Vec<T>>;
+}
+
+#[async_trait]
+pub trait StatementExecutor<T> {
+    async fn execute<'a, E: Acquire<'a, Database = Driver>>(self, acquirer: E) -> sqlx::Result<()>;
 }
