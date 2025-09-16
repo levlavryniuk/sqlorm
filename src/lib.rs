@@ -22,9 +22,12 @@
 //! - [x] Support for most common relations (belongs-to, has-many, has-one).
 //! - [x] Modular system for optional extended functionality (additional ways to query, etc).
 //! - [ ] Partial update support ( a big one )
+//! - [ ] Limit, offset support
 //! - [ ] Soft delete support
 //! - [ ] Combined pk's
 //! - [ ] Transactions
+//! - [ ] Cross-relations filters
+//! e.g. User::query().with_posts().filter(Post::read_time.gt_(4))
 //!
 //!
 //!
