@@ -133,17 +133,18 @@ pub fn save(es: &EntityStruct) -> TokenStream {
         .iter()
         .filter(|f| !f.is_ignored() && is_uuid_type(&f.ty))
         .map(|f| {
-            let ident = &f.ident;
-            let ty = &f.ty;
+            if cfg!(feature = "uuid") {
+                let ident = &f.ident;
+                let ty = &f.ty;
 
-            #[cfg(feature = "uuid")]
-            quote! {
-                if <#ty as Default>::default() == self.#ident {
-                    self.#ident = uuid::Uuid::new_v4();
+                quote! {
+                    if <#ty as Default>::default() == self.#ident {
+                        self.#ident = uuid::Uuid::new_v4();
+                    }
                 }
+            } else {
+                quote! {}
             }
-            #[cfg(not(feature = "uuid"))]
-            quote! {}
         });
 
     quote! {
