@@ -75,25 +75,11 @@ pub fn save(es: &EntityStruct) -> TokenStream {
         .map(|f| &f.ident)
         .collect();
 
-    let non_pk_fields: Vec<&Ident> = es
-        .fields
-        .iter()
-        .filter(|f| !f.is_pk() && !f.is_ignored())
-        .map(|f| &f.ident)
-        .collect();
-
     let insert_cols = insert_fields
         .iter()
         .map(|id| id.to_string().to_lowercase())
         .collect::<Vec<_>>()
         .join(", ");
-
-    let non_pk_cols = non_pk_fields
-        .iter()
-        .map(|id| id.to_string().to_lowercase())
-        .collect::<Vec<_>>();
-
-    let pk_col = pk_ident.to_string().to_lowercase();
 
     let insert_placeholders_str = {
         #[cfg(feature = "postgres")]
@@ -109,45 +95,9 @@ pub fn save(es: &EntityStruct) -> TokenStream {
         }
     };
 
-    let update_set_clause = {
-        #[cfg(feature = "postgres")]
-        {
-            non_pk_cols
-                .iter()
-                .enumerate()
-                .map(|(i, name)| format!("{} = ${}", name, i + 1))
-                .collect::<Vec<_>>()
-                .join(", ")
-        }
-        #[cfg(not(feature = "postgres"))]
-        {
-            non_pk_cols
-                .iter()
-                .map(|name| format!("{} = ?", name))
-                .collect::<Vec<_>>()
-                .join(", ")
-        }
-    };
-
-    let where_placeholder_str = {
-        #[cfg(feature = "postgres")]
-        {
-            format!("${}", non_pk_fields.len() + 1)
-        }
-        #[cfg(not(feature = "postgres"))]
-        {
-            "?".to_string()
-        }
-    };
-
     let insert_sql = format!(
         "INSERT INTO {} ({}) VALUES ({}) RETURNING *",
         table_name, insert_cols, insert_placeholders_str
-    );
-
-    let update_sql = format!(
-        "UPDATE {} SET {} WHERE {} = {} RETURNING *",
-        table_name, update_set_clause, pk_col, where_placeholder_str
     );
 
     let created_assign = es
@@ -177,8 +127,6 @@ pub fn save(es: &EntityStruct) -> TokenStream {
             }
         })
         .unwrap_or_else(|| quote! {});
-
-    let updated_assign_update = updated_assign_insert.clone();
 
     let uuid_assigns = es
         .fields
@@ -248,43 +196,6 @@ pub fn save(es: &EntityStruct) -> TokenStream {
                     .await
             }
 
-            /// Updates an existing record in the database.
-            ///
-            /// This method forces an UPDATE operation using the primary key to identify the record.
-            /// It automatically updates timestamp fields marked with:
-            /// - `#[sql(timestamp(updated_at, factory_fn()))]` - Set using custom factory
-            ///
-            /// Takes ownership of self and returns a new instance with the updated record data from the database.
-            ///
-            /// # Returns
-            ///
-            /// Returns `Ok(Self)` with the updated record data, or an `sqlx::Error` if the
-            /// update fails (e.g., record not found, constraint violations, database connection issues).
-            ///
-            /// # Example
-            ///
-            /// ```ignore
-            /// let mut user = User::find_by_id(&pool, 1).await?.expect("User not found");
-            /// user.name = "Updated Name".to_string();
-            ///
-            /// let updated_user = user.update(&pool).await?;
-            /// println!("Updated user: {}", updated_user.name);
-            /// ```
-            // pub async fn update<'a, E>(
-            //     mut self,
-            //     executor: E
-            // ) -> ::sqlorm::sqlx::Result<Self>
-            // where
-            //     E: ::sqlorm::sqlx::Executor<'a, Database = ::sqlorm::Driver>
-            // {
-            //     #updated_assign_update
-            //
-            //     ::sqlorm::sqlx::query_as::<_, #s_ident>(#update_sql)
-            //         #(.bind(&self.#non_pk_fields))*
-            //         .bind(&self.#pk_ident)
-            //         .fetch_one(executor)
-            //         .await
-            // }
 
             /// Saves the record to the database (insert if new, update if existing).
             ///
@@ -292,8 +203,7 @@ pub fn save(es: &EntityStruct) -> TokenStream {
             /// - If the primary key equals the type's default value, performs an INSERT
             /// - Otherwise, performs an UPDATE
             ///
-            /// This is the recommended method for most save operations as it handles both
-            /// creation and modification scenarios automatically.
+            /// Note: if you intent to update only a few fields, use `update` method.
             ///
             /// # Returns
             ///

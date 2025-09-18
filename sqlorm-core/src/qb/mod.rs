@@ -4,13 +4,12 @@ pub mod condition;
 use std::fmt::Debug;
 
 #[cfg(any(feature = "postgres", feature = "sqlite"))]
-use crate::driver::{Driver, Row};
+use crate::driver::Driver;
 use crate::format_alised_col_name;
 use crate::selectable::Selectable;
 pub use bind::BindValue;
 pub use column::Column;
 pub use condition::Condition;
-use sqlx::FromRow;
 use sqlx::QueryBuilder;
 
 /// Quote identifiers appropriately for the target database

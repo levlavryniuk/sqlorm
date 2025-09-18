@@ -1,8 +1,6 @@
 use crate::Driver;
-use crate::Pool;
 use crate::Row;
 use crate::TableInfo;
-use crate::selectable::Selectable;
 use async_trait::async_trait;
 use sqlx::Acquire;
 

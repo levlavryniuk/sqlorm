@@ -8,7 +8,6 @@ use sqlx::Acquire;
 mod sb;
 
 pub use crate::qb::TableInfo;
-use crate::selectable::Selectable;
 pub use async_trait::async_trait;
 pub use qb::Column;
 pub use qb::Condition;

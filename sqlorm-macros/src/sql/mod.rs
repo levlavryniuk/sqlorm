@@ -10,7 +10,6 @@ use crate::entity::EntityStruct;
 
 mod find;
 mod save;
-mod update;
 
 /// Generates all SQL methods for an entity.
 ///
