@@ -2,7 +2,9 @@ use crate::Driver;
 use crate::Pool;
 use crate::Row;
 use crate::TableInfo;
+use crate::selectable::Selectable;
 use async_trait::async_trait;
+use sqlx::Acquire;
 
 /// Describes a database table and its metadata used by the query builder.
 ///
@@ -83,9 +85,15 @@ pub trait FromAliasedRow {
 #[async_trait]
 pub trait GenericExecutor<T> {
     /// Executes the query and returns a single row mapped as `T`.
-    async fn fetch_one_as(self, pool: &Pool) -> sqlx::Result<T>;
+    async fn fetch_one_as<'a, A: Send + Acquire<'a, Database = Driver>>(
+        self,
+        pool: A,
+    ) -> sqlx::Result<T>;
     /// Executes the query and returns all rows mapped as `T`.
-    async fn fetch_all_as(self, pool: &Pool) -> sqlx::Result<Vec<T>>;
+    async fn fetch_all_as<'a, A: Send + Acquire<'a, Database = Driver>>(
+        self,
+        pool: A,
+    ) -> sqlx::Result<Vec<T>>;
 }
 
 #[async_trait]

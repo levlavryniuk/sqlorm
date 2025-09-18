@@ -4,9 +4,11 @@ mod consts;
 pub mod qb;
 mod selectable;
 pub use consts::*;
+use sqlx::Acquire;
 mod sb;
 
 pub use crate::qb::TableInfo;
+use crate::selectable::Selectable;
 pub use async_trait::async_trait;
 pub use qb::Column;
 pub use qb::Condition;
@@ -28,15 +30,23 @@ impl<T> GenericExecutor<T> for QB<T>
 where
     T: for<'r> FromRow<'r, Row> + Send + Unpin + std::fmt::Debug,
 {
-    async fn fetch_one_as(mut self, pool: &Pool) -> sqlx::Result<T> {
+    async fn fetch_one_as<'a, A: Send + Acquire<'a, Database = Driver>>(
+        mut self,
+        acquirer: A,
+    ) -> sqlx::Result<T> {
+        let mut conn = acquirer.acquire().await?;
         self.eager.clear();
         self.batch.clear();
-        let row = self.build_query().build().fetch_one(pool).await?;
+        let row = self.build_query().build().fetch_one(&mut *conn).await?;
         T::from_row(&row)
     }
 
-    async fn fetch_all_as(self, pool: &Pool) -> sqlx::Result<Vec<T>> {
-        let rows = self.build_query().build().fetch_all(pool).await?;
+    async fn fetch_all_as<'a, A: Send + Acquire<'a, Database = Driver>>(
+        mut self,
+        acquirer: A,
+    ) -> sqlx::Result<Vec<T>> {
+        let mut conn = acquirer.acquire().await?;
+        let rows = self.build_query().build().fetch_all(&mut *conn).await?;
         rows.iter().map(T::from_row).collect()
     }
 }

@@ -132,8 +132,7 @@ pub fn executor_trait(es: &crate::EntityStruct) -> proc_macro2::TokenStream {
 
         #[automatically_derived]
         #[::sqlorm::async_trait]
-        impl #tident for ::sqlorm::QB<#s_name> where
-    #s_name: Send + Sync + ::sqlorm::Table + 'static,{
+        impl #tident for ::sqlorm::QB<#s_name> {
             async fn fetch_one<'a, A>(self, acquirer: A) -> ::sqlorm::sqlx::Result<#s_name>
             where
                 A: Send + ::sqlorm::sqlx::Acquire<'a, Database =::sqlorm::Driver>,
