@@ -17,6 +17,7 @@ use std::marker::PhantomData;
 /// let cond: Condition = ID.eq(42);
 /// assert_eq!(cond.sql, "user__.id = ?");
 /// ```
+#[derive(Debug)]
 pub struct Column<T> {
     /// The column name as it appears in SQL.
     pub name: &'static str,

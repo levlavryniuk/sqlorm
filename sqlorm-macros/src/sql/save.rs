@@ -235,15 +235,16 @@ pub fn save(es: &EntityStruct) -> TokenStream {
             /// ```
             pub async fn insert<'a, E>(mut self, executor: E) -> sqlx::Result<Self>
             where
-                E: ::sqlorm::sqlx::Executor<'a, Database = ::sqlorm::Driver>,
+                E: Send + ::sqlorm::sqlx::Acquire<'a, Database = ::sqlorm::Driver>,
             {
+                let mut connection = executor.acquire().await?;
                 #(#uuid_assigns)*
                 #created_assign
                 #updated_assign_insert
 
                 ::sqlorm::sqlx::query_as::<_, #s_ident>(#insert_sql)
                     #(.bind(&self.#insert_fields))*
-                    .fetch_one(executor)
+                    .fetch_one(&mut *connection)
                     .await
             }
 
@@ -269,21 +270,21 @@ pub fn save(es: &EntityStruct) -> TokenStream {
             /// let updated_user = user.update(&pool).await?;
             /// println!("Updated user: {}", updated_user.name);
             /// ```
-            pub async fn update<'a, E>(
-                mut self,
-                executor: E
-            ) -> ::sqlorm::sqlx::Result<Self>
-            where
-                E: ::sqlorm::sqlx::Executor<'a, Database = ::sqlorm::Driver>
-            {
-                #updated_assign_update
-
-                ::sqlorm::sqlx::query_as::<_, #s_ident>(#update_sql)
-                    #(.bind(&self.#non_pk_fields))*
-                    .bind(&self.#pk_ident)
-                    .fetch_one(executor)
-                    .await
-            }
+            // pub async fn update<'a, E>(
+            //     mut self,
+            //     executor: E
+            // ) -> ::sqlorm::sqlx::Result<Self>
+            // where
+            //     E: ::sqlorm::sqlx::Executor<'a, Database = ::sqlorm::Driver>
+            // {
+            //     #updated_assign_update
+            //
+            //     ::sqlorm::sqlx::query_as::<_, #s_ident>(#update_sql)
+            //         #(.bind(&self.#non_pk_fields))*
+            //         .bind(&self.#pk_ident)
+            //         .fetch_one(executor)
+            //         .await
+            // }
 
             /// Saves the record to the database (insert if new, update if existing).
             ///
@@ -322,12 +323,13 @@ pub fn save(es: &EntityStruct) -> TokenStream {
                 executor: E
             ) -> ::sqlorm::sqlx::Result<Self>
             where
-                E: ::sqlorm::sqlx::Executor<'a, Database = ::sqlorm::Driver>
+                E: Send + ::sqlorm::sqlx::Acquire<'a, Database = ::sqlorm::Driver>
             {
                 if <#pk_type as Default>::default() == self.#pk_ident {
                     self.insert(executor).await
                 } else {
-                    self.update(executor).await
+                    use ::sqlorm::StatementExecutor;
+                    self.update().execute(executor).await
                 }
             }
         }

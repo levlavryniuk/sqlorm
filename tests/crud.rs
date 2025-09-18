@@ -1,5 +1,6 @@
 mod common;
 use common::entities::UserExecutor;
+use sqlorm::StatementExecutor;
 
 use common::create_clean_db;
 use common::entities::{Donation, Jar, User};
@@ -17,7 +18,7 @@ async fn test_user_crud_operations() {
     assert_eq!(user.email, "test@example.com");
     assert_eq!(user.username, "testuser");
 
-    let found_user = User::find_by_id(&pool, user.id)
+    let mut found_user = User::find_by_id(&pool, user.id)
         .await
         .expect("Failed to find user by ID")
         .expect("User not found");
@@ -30,10 +31,11 @@ async fn test_user_crud_operations() {
         .expect("User not found by email");
     assert_eq!(found_by_email.id, user.id);
 
-    let mut updated_user = found_user;
-    updated_user.username = "updated_username".to_string();
-    let updated_user = updated_user
-        .save(&pool)
+    found_user.username = "updated_username".to_string();
+    let updated_user = found_user
+        .update()
+        .columns(User::USERNAME)
+        .execute(&pool)
         .await
         .expect("Failed to update user");
     assert_eq!(updated_user.username, "updated_username");
@@ -99,7 +101,8 @@ async fn test_forced_insert_and_update() {
     let mut user_to_update = user;
     user_to_update.username = "force_updated".to_string();
     let user = user_to_update
-        .update(&pool)
+        .update()
+        .execute(&pool)
         .await
         .expect("Failed to force update");
     assert_eq!(user.username, "force_updated");

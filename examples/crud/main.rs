@@ -224,11 +224,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Select specific fields
     let user_summaries: Vec<(String, String, Option<String>)> = User::query()
-        .select(vec![
-            User::USERNAME.as_ref(),
-            User::EMAIL.as_ref(),
-            User::BIO.as_ref(),
-        ])
+        .select((User::USERNAME, User::EMAIL, User::BIO))
         .fetch_all_as(&pool)
         .await?;
 

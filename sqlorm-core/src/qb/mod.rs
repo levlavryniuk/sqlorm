@@ -6,6 +6,7 @@ use std::fmt::Debug;
 #[cfg(any(feature = "postgres", feature = "sqlite"))]
 use crate::driver::{Driver, Row};
 use crate::format_alised_col_name;
+use crate::selectable::Selectable;
 pub use bind::BindValue;
 pub use column::Column;
 pub use condition::Condition;
@@ -22,7 +23,7 @@ pub fn with_quotes(s: &str) -> String {
 
 #[derive(Debug)]
 /// Query builder for composing SELECT statements with optional joins and filters.
-pub struct QB<T: std::fmt::Debug> {
+pub struct QB<T> {
     /// Base table information and selected columns.
     pub base: TableInfo,
     /// Eager joins that project columns from related tables.
@@ -85,7 +86,8 @@ impl<T: std::fmt::Debug> QB<T> {
         self
     }
 
-    pub fn select<'a, Out: Debug + FromRow<'a, Row>>(mut self, cols: Vec<&'static str>) -> QB<Out> {
+    pub fn select<'a, S: Selectable>(mut self, cols: S) -> QB<S::Row> {
+        let cols = cols.collect();
         if cols.is_empty() {
             panic!("Cannot select empty column list. At least one column must be specified.");
         }

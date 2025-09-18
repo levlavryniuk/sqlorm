@@ -3,7 +3,6 @@ use crate::Pool;
 use crate::Row;
 use crate::TableInfo;
 use async_trait::async_trait;
-use sqlx::Acquire;
 
 /// Describes a database table and its metadata used by the query builder.
 ///
@@ -90,6 +89,8 @@ pub trait GenericExecutor<T> {
 }
 
 #[async_trait]
-pub trait StatementExecutor<T> {
-    async fn execute<'a, E: Acquire<'a, Database = Driver>>(self, acquirer: E) -> sqlx::Result<()>;
+pub trait StatementExecutor<T: Table> {
+    async fn execute<'a, E>(self, acquirer: E) -> sqlx::Result<T>
+    where
+        E: Send + crate::sqlx::Acquire<'a, Database = Driver>;
 }

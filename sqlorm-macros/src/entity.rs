@@ -1,5 +1,6 @@
 use crate::{
     qb,
+    sb,
     traits::{self},
 };
 use proc_macro2::TokenStream;
@@ -199,6 +200,7 @@ pub fn handle(es: EntityStruct) -> TokenStream {
     let relations = relations::relations(&es);
     let traits = traits::traits(&es);
     let qb = qb::qb(&es);
+    let sb = sb::sb(&es);
     quote! (
         #cols
 
@@ -209,6 +211,8 @@ pub fn handle(es: EntityStruct) -> TokenStream {
         #traits
 
         #qb
+
+        #sb
     )
 }
 

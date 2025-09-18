@@ -1,27 +1,30 @@
-use crate::{Condition, Connection, Driver, TableInfo};
+use crate::{Condition, TableInfo, selectable::Selectable};
 
-struct SB<T> {
+pub struct SB<T> {
     /// Base table information and selected columns.
     pub base: TableInfo,
     /// Fields update
     pub fields: Option<Vec<&'static str>>,
     /// WHERE clause conditions combined with AND.
     pub filters: Vec<Condition>,
-    _marker: std::marker::PhantomData<T>,
+    /// The entity to operate on
+    pub entity: T,
 }
 impl<T> SB<T> {
-    pub fn new(base: TableInfo) -> SB<T> {
+    pub fn new(base: TableInfo, entity: T) -> SB<T> {
         SB {
             base,
             filters: Vec::new(),
             fields: None,
-            _marker: std::marker::PhantomData,
+            entity,
         }
     }
-    pub fn columns(&mut self, fields: Vec<&'static str>) -> &mut Self {
-        self.fields = Some(fields);
+
+    pub fn columns(mut self, fields: impl Selectable) -> Self {
+        self.fields = Some(fields.collect());
         self
     }
+
     pub fn filter(mut self, cond: Condition) -> Self {
         self.filters.push(cond);
         self

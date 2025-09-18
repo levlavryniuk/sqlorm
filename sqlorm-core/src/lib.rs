@@ -2,8 +2,9 @@
 
 mod consts;
 pub mod qb;
-mod sb;
+mod selectable;
 pub use consts::*;
+mod sb;
 
 pub use crate::qb::TableInfo;
 pub use async_trait::async_trait;
@@ -15,9 +16,11 @@ mod traits;
 #[cfg(any(feature = "postgres", feature = "sqlite"))]
 pub use driver::{Connection, Driver, Pool, Row};
 
+pub use sb::SB;
 use sqlx::FromRow;
 pub use traits::FromAliasedRow;
 pub use traits::GenericExecutor;
+pub use traits::StatementExecutor;
 pub use traits::Table;
 
 #[async_trait]
