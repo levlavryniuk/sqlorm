@@ -31,6 +31,8 @@ pub struct QB<T> {
     pub batch: Vec<JoinSpec>,
     /// WHERE clause conditions combined with AND.
     pub filters: Vec<Condition>,
+    pub limit: Option<i32>,
+    pub offset: Option<i32>,
     _marker: std::marker::PhantomData<T>,
 }
 #[derive(Clone, Debug)]
@@ -72,6 +74,8 @@ impl<T: std::fmt::Debug> QB<T> {
             batch: Vec::new(),
             filters: Vec::new(),
             _marker: std::marker::PhantomData,
+            limit: None,
+            offset: None,
         }
     }
 
@@ -85,6 +89,16 @@ impl<T: std::fmt::Debug> QB<T> {
         self
     }
 
+    pub fn limit(mut self, limit: i32) -> Self {
+        self.limit = Some(limit);
+        self
+    }
+
+    pub fn offset(mut self, offset: i32) -> Self {
+        self.offset = Some(offset);
+        self
+    }
+
     pub fn select<'a, S: Selectable>(mut self, cols: S) -> QB<S::Row> {
         let cols = cols.collect();
         if cols.is_empty() {
@@ -95,6 +109,8 @@ impl<T: std::fmt::Debug> QB<T> {
             base: self.base,
             eager: self.eager,
             batch: self.batch,
+            limit: self.limit,
+            offset: self.offset,
             filters: self.filters,
             _marker: std::marker::PhantomData,
         }
@@ -191,6 +207,16 @@ impl<T: std::fmt::Debug> QB<T> {
                 }
             }
         }
+        if let Some(l) = self.limit {
+            builder.push(" LIMIT ");
+            builder.push_bind(l);
+        }
+
+        if let Some(o) = self.offset {
+            builder.push(" OFFSET ");
+            builder.push_bind(o);
+        }
+        dbg!(builder.sql());
 
         builder
     }

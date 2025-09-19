@@ -208,6 +208,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Query with filters
     let users_with_bio = User::query()
         .filter(User::BIO.is_not_null())
+        .limit(4)
         .fetch_all(&pool)
         .await?;
     println!("🔍 Users with bio: {}", users_with_bio.len());
