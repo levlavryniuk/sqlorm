@@ -1,6 +1,6 @@
 
 [workspace.package]
-version = "0.4.17"
+version = "0.4.18"
 license = "Apache-2.0"
 edition = "2024"
 exclude = ["/.github", "/examples", "/tests"]
@@ -23,8 +23,8 @@ documentation = "https://docs.rs/sqlorm"
 members = ["sqlorm-core", ".", "sqlorm-macros"]
 
 [workspace.dependencies]
-sqlorm-core = { path = "sqlorm-core", version = "0.4.16" }
-sqlorm-macros = { path = "sqlorm-macros", version = "0.4.16" }
+sqlorm-core = { path = "sqlorm-core", version = "0.4.18" }
+sqlorm-macros = { path = "sqlorm-macros", version = "0.4.18" }
 async-trait = "0.1.8"
 lazy_static = "1.5"
 sqlx = { version = "0.8.6" }
