@@ -22,7 +22,7 @@
 //! - [x] Support for most common relations (belongs-to, has-many, has-one).
 //! - [x] Modular system for optional extended functionality (additional ways to query, etc).
 //! - [x] Partial update support ( a big one )
-//! - [ ] Limit, offset support
+//! - [x] Limit, offset support
 //! - [ ] Order-by's
 //! - [ ] Improved filtering system. ( OR, AND )
 //! - [ ] Soft delete support
