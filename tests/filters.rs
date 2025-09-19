@@ -216,3 +216,61 @@ async fn test_multiple_filters() {
     assert_eq!(results.len(), 1);
     assert_eq!(results[0].owner_id, user.id);
 }
+
+#[tokio::test]
+async fn test_filter_and_or() {
+    let pool = create_clean_db().await;
+    let users = setup_test_users(&pool).await;
+
+    let u1 = &users[0];
+    let u2 = &users[1];
+    let u3 = &users[2];
+
+    let results = User::query()
+        .filter(
+            User::EMAIL
+                .eq("eq1@example.com".to_string())
+                .and(User::USERNAME.eq("eq1".to_string())),
+        )
+        .fetch_all(&pool)
+        .await
+        .expect("Failed to filter with AND");
+    assert_eq!(results.len(), 1);
+    assert_eq!(results[0].id, u1.id);
+
+    let results = User::query()
+        .filter(
+            User::EMAIL
+                .eq("eq1@example.com".to_string())
+                .and(User::USERNAME.eq("wrong".to_string())),
+        )
+        .fetch_all(&pool)
+        .await
+        .expect("Failed to filter with AND false branch");
+    assert!(results.is_empty());
+
+    let results = User::query()
+        .filter(
+            User::EMAIL
+                .eq("eq1@example.com".to_string())
+                .or(User::EMAIL.eq("eq2@example.com".to_string())),
+        )
+        .fetch_all(&pool)
+        .await
+        .expect("Failed to filter with OR");
+    assert_eq!(results.len(), 2);
+    assert!(results.iter().any(|u| u.id == u1.id));
+    assert!(results.iter().any(|u| u.id == u2.id));
+
+    let results = User::query()
+        .filter(
+            User::EMAIL
+                .eq("nope@example.com".to_string())
+                .or(User::EMAIL.eq("like_me@example.com".to_string())),
+        )
+        .fetch_all(&pool)
+        .await
+        .expect("Failed to filter with OR partial match");
+    assert_eq!(results.len(), 1);
+    assert_eq!(results[0].id, u3.id);
+}
