@@ -1,9 +1,8 @@
-use common::entities::{JarExecutor, UserExecutor};
 use sqlorm::GenericExecutor;
 mod common;
 
 use common::create_clean_db;
-use common::entities::{Jar, User};
+use common::entities::User;
 
 #[tokio::test]
 async fn test_user_limit_results() {

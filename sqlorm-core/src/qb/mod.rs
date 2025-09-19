@@ -1,6 +1,7 @@
 mod bind;
 mod column;
 pub mod condition;
+mod limit_offset;
 use std::fmt::Debug;
 
 #[cfg(any(feature = "postgres", feature = "sqlite"))]
@@ -89,16 +90,6 @@ impl<T: std::fmt::Debug> QB<T> {
         self
     }
 
-    pub fn limit(mut self, limit: i32) -> Self {
-        self.limit = Some(limit);
-        self
-    }
-
-    pub fn offset(mut self, offset: i32) -> Self {
-        self.offset = Some(offset);
-        self
-    }
-
     pub fn select<'a, S: Selectable>(mut self, cols: S) -> QB<S::Row> {
         let cols = cols.collect();
         if cols.is_empty() {
@@ -116,7 +107,7 @@ impl<T: std::fmt::Debug> QB<T> {
         }
     }
 
-    fn build_projections(&self) -> Vec<String> {
+    fn apply_projections(&self, builder: &mut QueryBuilder<'static, Driver>) {
         let mut projections = Vec::new();
 
         for col in &self.base.columns {
@@ -133,15 +124,19 @@ impl<T: std::fmt::Debug> QB<T> {
             }
         }
 
-        projections
+        builder.push(projections.join(", "));
+
+        builder.push(" ");
     }
 
-    fn build_from_clause(&self) -> String {
-        format!(
+    fn apply_from_clause(&self, builder: &mut QueryBuilder<'static, Driver>) {
+        builder.push(format!(
             "FROM {} AS {}",
             with_quotes(self.base.name),
             self.base.alias
-        )
+        ));
+
+        builder.push(" ");
     }
 
     pub fn filter(mut self, cond: Condition) -> Self {
@@ -149,7 +144,7 @@ impl<T: std::fmt::Debug> QB<T> {
         self
     }
 
-    fn build_joins(&self) -> String {
+    fn apply_joins(&self, builder: &mut QueryBuilder<'static, Driver>) {
         let mut joins = String::new();
 
         for join in &self.eager {
@@ -173,21 +168,29 @@ impl<T: std::fmt::Debug> QB<T> {
             ));
         }
 
-        joins
+        builder.push(joins);
     }
 
-    pub fn build_query(&self) -> QueryBuilder<'static, Driver> {
-        let projections = self.build_projections().join(", ");
-        let from_clause = self.build_from_clause();
-        let joins = self.build_joins();
+    fn apply_limit<'args>(&self, builder: &mut QueryBuilder<'args, Driver>) {
+        if let Some(l) = self.limit {
+            builder.push(" LIMIT ");
+            builder.push_bind(l);
+        }
+    }
 
-        let mut builder = QueryBuilder::new("SELECT ");
-        builder.push(projections);
-        builder.push(" ");
-        builder.push(from_clause);
-        builder.push(" ");
-        builder.push(joins);
+    fn apply_offset<'args>(&self, builder: &mut QueryBuilder<'args, Driver>) {
+        if let Some(o) = self.offset {
+            #[cfg(feature = "sqlite")]
+            if let None = self.limit {
+                builder.push(" LIMIT ");
+                builder.push_bind(-1);
+            }
+            builder.push(" OFFSET ");
+            builder.push_bind(o);
+        }
+    }
 
+    fn apply_filters(&self, builder: &mut QueryBuilder<'static, Driver>) {
         if !self.filters.is_empty() {
             builder.push(" WHERE ");
 
@@ -202,21 +205,22 @@ impl<T: std::fmt::Debug> QB<T> {
                 }
 
                 for (val, part) in cond.values.iter().zip(parts) {
-                    val.bind(&mut builder);
+                    val.bind(builder);
                     builder.push(part);
                 }
             }
         }
-        if let Some(l) = self.limit {
-            builder.push(" LIMIT ");
-            builder.push_bind(l);
-        }
+    }
 
-        if let Some(o) = self.offset {
-            builder.push(" OFFSET ");
-            builder.push_bind(o);
-        }
-        dbg!(builder.sql());
+    pub fn build_query(&self) -> QueryBuilder<'static, Driver> {
+        let mut builder = QueryBuilder::new("SELECT ");
+
+        self.apply_projections(&mut builder);
+        self.apply_from_clause(&mut builder);
+        self.apply_joins(&mut builder);
+        self.apply_filters(&mut builder);
+        self.apply_limit(&mut builder);
+        self.apply_offset(&mut builder);
 
         builder
     }

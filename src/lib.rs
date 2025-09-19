@@ -23,6 +23,7 @@
 //! - [x] Modular system for optional extended functionality (additional ways to query, etc).
 //! - [x] Partial update support ( a big one )
 //! - [ ] Limit, offset support
+//! - [ ] Order-by's
 //! - [ ] Improved filtering system. ( OR, AND )
 //! - [ ] Soft delete support
 //! - [ ] Combined pk's
