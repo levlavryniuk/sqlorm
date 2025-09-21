@@ -1,6 +1,8 @@
 use crate::{Condition, TableInfo, selectable::Selectable};
 
-pub struct SB<T> {
+pub struct Update;
+pub struct Delete;
+pub struct SB<T, Stage> {
     /// Base table information and selected columns.
     pub base: TableInfo,
     /// Fields update
@@ -9,14 +11,16 @@ pub struct SB<T> {
     pub filters: Vec<Condition>,
     /// The entity to operate on
     pub entity: T,
+    _marker: std::marker::PhantomData<Stage>,
 }
-impl<T> SB<T> {
-    pub fn new(base: TableInfo, entity: T) -> SB<T> {
+impl<T> SB<T, Update> {
+    pub fn new(base: TableInfo, entity: T) -> SB<T, Update> {
         SB {
             base,
             filters: Vec::new(),
             fields: None,
             entity,
+            _marker: std::marker::PhantomData,
         }
     }
 

@@ -16,7 +16,7 @@ use crate::entity::{EntityStruct, FieldKind, TimestampKind};
 /// - `Uuid`
 /// - `sqlx::types::Uuid`
 /// - `::sqlx::types::Uuid`
-fn is_uuid_type(ty: &Type) -> bool {
+pub fn is_uuid_type(ty: &Type) -> bool {
     match ty {
         Type::Path(type_path) => {
             let path_str = quote!(#type_path).to_string().replace(' ', "");

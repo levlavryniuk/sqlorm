@@ -123,10 +123,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     updated_user.bio = Some("Senior Rust developer".to_string());
     let updated_user = updated_user.save(&pool).await?;  // updated_at auto-updated
 
-    // DELETE - Using raw sqlx for now
-    sqlx::query!("DELETE FROM users WHERE id = $1", user.id)
-        .execute(&pool)
-        .await?;
+    user.delete(&pool).await.unwrap()
 
     Ok(())
 }

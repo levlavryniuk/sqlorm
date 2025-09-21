@@ -168,3 +168,26 @@ async fn test_donation_with_uuid_primary_key() {
     assert_eq!(&found_donation.id, &donation.id);
     assert_eq!(found_donation.amount, 50.0);
 }
+
+#[tokio::test]
+async fn test_delete_user() {
+    let pool = create_clean_db().await;
+
+    let user = User::test_user("test@example.com", "testuser")
+        .save(&pool)
+        .await
+        .expect("Failed to save user");
+
+    assert!(user.id > 0, "User ID should be auto-generated");
+    assert_eq!(user.email, "test@example.com");
+    assert_eq!(user.username, "testuser");
+
+    let users = User::query().fetch_all(&pool).await.unwrap();
+    assert_eq!(users.len(), 1);
+
+    // soft delete, since User::deleted_at exists
+    user.delete(&pool).await.unwrap();
+
+    let user = User::query().fetch_one(&pool).await.unwrap();
+    assert!(user.deleted_at.is_some());
+}

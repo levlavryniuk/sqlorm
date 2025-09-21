@@ -1,3 +1,4 @@
+// TODO - if operation fails, return old state of changed fields.
 use crate::{
     EntityStruct,
     entity::{FieldKind, TimestampKind},
@@ -12,7 +13,7 @@ pub fn executor(es: &EntityStruct) -> proc_macro2::TokenStream {
     quote! {
         #[automatically_derived]
         #[::sqlorm::async_trait]
-        impl ::sqlorm::StatementExecutor<#ident> for ::sqlorm::SB<#ident> {
+        impl ::sqlorm::StatementExecutor<#ident> for ::sqlorm::SB<#ident,::sqlorm::Update> {
             #implementation
         }
     }

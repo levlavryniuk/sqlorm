@@ -17,7 +17,10 @@ mod traits;
 #[cfg(any(feature = "postgres", feature = "sqlite"))]
 pub use driver::{Connection, Driver, Pool, Row};
 
+pub use sb::Delete;
 pub use sb::SB;
+pub use sb::Update;
+
 use sqlx::FromRow;
 pub use traits::FromAliasedRow;
 pub use traits::GenericExecutor;
