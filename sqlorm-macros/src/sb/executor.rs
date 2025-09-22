@@ -22,18 +22,16 @@ pub fn executor(es: &EntityStruct) -> proc_macro2::TokenStream {
 pub fn implementation(es: &EntityStruct) -> proc_macro2::TokenStream {
     let table_name = with_quotes(&es.table_name.raw);
     let ident = &es.struct_ident;
-    let pk_field = &es.pk.ident;
-    let pk_col = pk_field.to_string().to_lowercase();
+    let pk_ident = &es.pk.ident;
+    let pk_col = &es.pk.name;
 
     let updateable_fields: Vec<_> = es
         .fields
         .iter()
         .filter(|f| !f.is_pk() && !f.is_ignored())
         .collect();
-    let all_columns: Vec<String> = updateable_fields
-        .iter()
-        .map(|f| f.ident.to_string())
-        .collect();
+
+    let all_columns: Vec<String> = updateable_fields.iter().map(|f| f.name.clone()).collect();
 
     let updated_assign_update = es
         .fields
@@ -65,7 +63,7 @@ pub fn implementation(es: &EntityStruct) -> proc_macro2::TokenStream {
 
     let field_bindings = updateable_fields.iter().map(|field| {
         let field_ident = &field.ident;
-        let field_name = field_ident.to_string().to_lowercase();
+        let field_name = &field.name;
         quote! {
             #field_name => {
                 query = query.bind(&self.entity.#field_ident);
@@ -120,7 +118,7 @@ pub fn implementation(es: &EntityStruct) -> proc_macro2::TokenStream {
                 }
             }
 
-            query = query.bind(&self.entity.#pk_field);
+            query = query.bind(&self.entity.#pk_ident);
 
             query.execute(&mut *conn).await?;
 

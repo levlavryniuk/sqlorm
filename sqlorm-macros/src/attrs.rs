@@ -1,10 +1,10 @@
 //! Attribute parsing for Entity macro fields.
 //!
-//! This module handles parsing of `#[sql(...)]` and `#[sqlx(...)]` attributes
+//! This module handles parsing of `#[sql(...)]` attributes
 //! on struct fields, converting them into the appropriate `EntityField` metadata
 //! for code generation.
 
-use syn::{Field, Ident, LitStr, Result, Token, Expr, parse::ParseStream};
+use syn::{Expr, Field, Ident, LitStr, Result, Token, parse::ParseStream};
 
 use crate::{
     entity::{EntityField, FieldKind, TimestampKind},
@@ -13,7 +13,7 @@ use crate::{
 
 /// Parses a single struct field into an `EntityField` with all its metadata.
 ///
-/// This function processes all `#[sql(...)]` and `#[sqlx(...)]` attributes on a field,
+/// This function processes all `#[sql(...)]` attributes on a field,
 /// extracting information about:
 /// - Field type (primary key, unique, timestamp, etc.)
 /// - Relationships (belongs_to, has_many, has_one)
@@ -27,10 +27,10 @@ use crate::{
 /// - `timestamp(field_name, factory_fn())` - Automatic timestamp management with custom factory
 /// - `relation(...)` - Define relationships
 ///
-/// ## `#[sqlx(...)]`
-/// - `skip` - Exclude from SQL operations
 pub fn parse_entity_field(field: &Field) -> Result<EntityField> {
     let mut kind = FieldKind::Regular { unique: false };
+    let ident = field.ident.clone().unwrap();
+    let mut name = ident.to_string();
     let mut relations: Vec<Relation> = Vec::new();
 
     for attr in &field.attrs {
@@ -52,6 +52,12 @@ pub fn parse_entity_field(field: &Field) -> Result<EntityField> {
                     "pk" => {
                         kind = FieldKind::PrimaryKey;
                     }
+                    "rename" => {
+                        let content;
+                        syn::parenthesized!(content in meta.input);
+                        let col: LitStr = content.parse()?;
+                        name = col.value();
+                    }
                     "timestamp" => {
                         let content;
                         syn::parenthesized!(content in meta.input);
@@ -72,8 +78,9 @@ pub fn parse_entity_field(field: &Field) -> Result<EntityField> {
     }
 
     Ok(EntityField {
-        ident: field.ident.clone().unwrap(),
+        ident,
         ty: field.ty.clone(),
+        name,
         kind,
         relations: if relations.is_empty() {
             None
@@ -175,7 +182,7 @@ pub fn parse_timestamp(input: ParseStream) -> Result<TimestampKind> {
     let field_name: Ident = input.parse()?;
     input.parse::<Token![,]>()?;
     let factory: Expr = input.parse()?;
-    
+
     match field_name.to_string().as_str() {
         "created_at" => Ok(TimestampKind::Created { factory }),
         "updated_at" => Ok(TimestampKind::Updated { factory }),

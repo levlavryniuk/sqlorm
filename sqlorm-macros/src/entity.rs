@@ -1,6 +1,5 @@
 use crate::{
-    qb,
-    sb,
+    qb, sb,
     traits::{self},
 };
 use proc_macro2::TokenStream;
@@ -25,6 +24,8 @@ use crate::{
 pub struct EntityField {
     /// The Rust identifier name (e.g., `id`, `email`, `created_at`)
     pub ident: Ident,
+    /// The column name. Either `self.ident`, or user-defined name
+    pub name: String,
     /// The Rust type of the field (e.g., `i64`, `String`, `DateTime<Utc>`)
     pub ty: Type,
     /// The semantic kind of field (primary key, timestamp, regular, etc.)

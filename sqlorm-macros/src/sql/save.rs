@@ -66,38 +66,36 @@ pub fn save(es: &EntityStruct) -> TokenStream {
     let pk_field = &es.pk;
     let pk_ident = &pk_field.ident;
     let pk_type = &pk_field.ty;
-
-    let insert_fields: Vec<&Ident> = es
+    let fields = es
         .fields
         .iter()
         .filter(|f| !f.is_ignored())
-        .filter(|f| !f.is_pk() || is_uuid_type(&f.ty))
-        .map(|f| &f.ident)
-        .collect();
+        .filter(|f| !f.is_pk() || is_uuid_type(&f.ty));
 
-    let insert_cols = insert_fields
-        .iter()
-        .map(|id| id.to_string().to_lowercase())
+    let insert_field_idents: Vec<&Ident> = fields.clone().map(|f| &f.ident).collect();
+
+    let insert_columns = fields
+        .map(|id| id.name.clone())
         .collect::<Vec<_>>()
         .join(", ");
 
     let insert_placeholders_str = {
         #[cfg(feature = "postgres")]
         {
-            (1..=insert_fields.len())
+            (1..=insert_field_idents.len())
                 .map(|i| format!("${}", i))
                 .collect::<Vec<_>>()
                 .join(", ")
         }
         #[cfg(not(feature = "postgres"))]
         {
-            vec!["?"; insert_fields.len()].join(", ")
+            vec!["?"; insert_field_idents.len()].join(", ")
         }
     };
 
     let insert_sql = format!(
         "INSERT INTO {} ({}) VALUES ({}) RETURNING *",
-        table_name, insert_cols, insert_placeholders_str
+        table_name, insert_columns, insert_placeholders_str
     );
 
     let created_assign = es
@@ -192,7 +190,7 @@ pub fn save(es: &EntityStruct) -> TokenStream {
                 #updated_assign_insert
 
                 ::sqlorm::sqlx::query_as::<_, #s_ident>(#insert_sql)
-                    #(.bind(&self.#insert_fields))*
+                    #(.bind(&self.#insert_field_idents))*
                     .fetch_one(&mut *connection)
                     .await
             }

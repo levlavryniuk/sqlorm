@@ -9,7 +9,7 @@ pub fn delete(es: &EntityStruct) -> proc_macro2::TokenStream {
     let table_name = with_quotes(&es.table_name.raw);
     let ident = &es.struct_ident;
     let pk_ident = &es.pk.ident;
-    let pk_field = &es.pk.ident.to_string();
+    let pk_field = &es.pk.name;
     let (placeholder, placeholder2) = if cfg!(feature = "postgres") {
         ("$1", "$2")
     } else {
@@ -20,7 +20,7 @@ pub fn delete(es: &EntityStruct) -> proc_macro2::TokenStream {
         .iter()
         .find(|f| matches!(f.kind, FieldKind::Timestamp(TimestampKind::Deleted { .. })))
     {
-        let deleted_at_col = &f.ident.to_string();
+        let deleted_at_col = &f.name;
         let deleted_at_ident = &f.ident;
         let factory = if let FieldKind::Timestamp(TimestampKind::Deleted { factory }) = &f.kind {
             factory

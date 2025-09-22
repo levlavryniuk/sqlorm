@@ -11,11 +11,11 @@ pub fn table(es: &EntityStruct) -> TokenStream {
     let sql_name = with_quotes(&name);
     let aliased_sql_name = with_quotes(&format!("{}{}", alias, name));
     let pk = &es.pk;
-    let pk_name = pk.ident.to_string();
+    let pk_name = &pk.name;
 
     let fields: Vec<&EntityField> = es.fields.iter().filter(|f| !f.is_ignored()).collect();
 
-    let field_names: Vec<String> = fields.iter().map(|f| f.ident.to_string()).collect();
+    let field_names: Vec<String> = fields.iter().map(|f| f.name.clone()).collect();
 
     quote! {
         #[automatically_derived]

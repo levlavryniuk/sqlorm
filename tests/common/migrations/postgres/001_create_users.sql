@@ -7,7 +7,7 @@ CREATE TABLE "user" (
     "last_name" TEXT NOT NULL,
     "bio" TEXT,
     "wallpaper_url" TEXT,
-    "avatar_url" TEXT,
+    "avatar" TEXT,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "deleted_at" TIMESTAMPTZ

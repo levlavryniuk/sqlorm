@@ -12,7 +12,7 @@ pub fn handle(entity: &EntityStruct) -> TokenStream {
 
     let table_alias = &entity.table_name.alias;
 
-    let field_names: Vec<String> = fields.iter().map(|f| f.ident.to_string()).collect();
+    let field_names: Vec<String> = fields.iter().map(|f| f.name.clone()).collect();
 
     let aliased_field_names: Vec<String> = fields
         .iter()

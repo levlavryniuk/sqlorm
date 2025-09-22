@@ -190,7 +190,7 @@ pub fn table(args: TokenStream, input: TokenStream) -> TokenStream {
     // reapply the derive attributes after field injection
     quote::quote! {
         #(#existing_derives)*
-        #[derive(::sqlorm::sqlx::FromRow,::sqlorm::Entity)]
+        #[derive(::sqlorm::Entity)]
         #[sql(name = #table_name)]
         #model
     }
@@ -248,7 +248,6 @@ fn inject_relation_fields(model: &mut ItemStruct) -> syn::Result<()> {
 
             let new_field: Field = syn::parse_quote! {
                 #[sql(skip)]
-                #[sqlx(skip)]
                 pub #field_ident: #field_type
             };
             fields.named.push(new_field);

@@ -21,6 +21,7 @@ pub struct User {
     pub first_name: String,
     pub last_name: String,
     pub wallpaper_url: Option<String>,
+    #[sql(rename("avatar"))]
     pub avatar_url: Option<String>,
     pub bio: Option<String>,
     #[sql(timestamp(created_at, chrono::Utc::now()))]
