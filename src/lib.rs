@@ -24,9 +24,9 @@
 //! - [x] Partial update support ( a big one )
 //! - [x] Limit, offset support
 //! - [x] Improved filtering system. ( OR, AND )
+//! - [x] Renaming fields
+//! - [x] Soft delete support
 //! - [ ] Order-by's
-//! - [ ] Renaming fields
-//! - [ ] Soft delete support
 //! - [ ] Combined pk's
 //! - [ ] Transactions
 //! - [ ] Cross-relations filters

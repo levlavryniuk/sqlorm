@@ -11,6 +11,5 @@ CREATE TABLE "jar" (
     "owner_id" BIGINT NOT NULL,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "deleted_at" TIMESTAMPTZ,
     FOREIGN KEY ("owner_id") REFERENCES "user"("id")
 );
