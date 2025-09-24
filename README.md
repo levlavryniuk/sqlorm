@@ -19,7 +19,7 @@ Sqlorm is a modern ORM built on top of [sqlx](https://github.com/launchbadge/sql
 - ** Type-Safe **: All queries are checked at compile-time
 - ** Zero-Cost Abstraction**: Minimal overhead over raw sqlx
 - ** Macro-Powered**: Rich APIs generated from simple struct definitions
-- ** Relationships**: Support for `belongs_to` and `has_many` relations with eager/lazy loading
+- ** Relationships**: Support for `belongs_to`, `has_many` and `has_many` relations with eager/lazy loading
 - ** Automatic Timestamps**: Built-in `created_at`/`updated_at` handling
 - ** Multi-Database**: PostgreSQL and SQLite support
 - ** Powerful Querying**: Fluent query builder with comprehensive filtering
@@ -33,10 +33,6 @@ Add to your `Cargo.toml`:
 ```toml
 [dependencies]
 sqlorm = { version = "0.4", features = ["postgres", "uuid" ] }
-# Or for SQLite:
-# sqlorm = { version = "0.4", features = ["sqlite", "uuid" ] }
-
-sqlx = { version = "0.8", features = ["postgres", "runtime-tokio-rustls"] }
 tokio = { version = "1.0", features = ["full"] }
 chrono = { version = "0.4", features = ["serde"] }
 uuid = { version = "1.0", features = ["v4", "serde"] }
@@ -53,7 +49,7 @@ Choose **one** feature:
 Optional features:
 
 - `uuid` - UUID support
-- `extra-traits` - Additional trait derivations
+- `extra-traits` - Additional query methods for better DX
 
 ### Your First Entity
 
@@ -109,19 +105,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Created user with ID: {}", user.id);
 
     // READ - Find by primary key
-    let found_user = User::find_by_id(&pool, user.id)
+    let found_user = User::query().filter(User::ID.eq(user.id)).fetch_one(&pool)
         .await?
         .expect("User should exist");
 
     // READ - Find by unique field. Note, this requires `extra-traits` feature
-    let found_by_email = User::find_by_email(&pool, "alice@example.com".to_string())
+    let found_by_email = User::find_by_email(&pool,"alice@example.com".to_string());
         .await?
         .expect("User should exist");
 
     // UPDATE - Modify and save
     let mut updated_user = found_user;
     updated_user.bio = Some("Senior Rust developer".to_string());
-    let updated_user = updated_user.save(&pool).await?;  // updated_at auto-updated
+    let updated_user = updated_user.update().columns((User::BIO)).execute(&pool).await?;  // updated_at auto-updated
 
     user.delete(&pool).await.unwrap()
 
@@ -179,9 +175,9 @@ Optimize your queries by selecting only needed fields:
 
 ```rust
 // Select specific fields as tuple
-let (id, email): (i64, String) = User::query()
+let (id, email) = User::query()
     .filter(User::USERNAME.eq("alice".to_string()))
-    .select(vec![User::ID.as_ref(), User::EMAIL.as_ref()])
+    .select((User::ID, User::EMAIL))
     .fetch_one_as(&pool)
     .await?;
 
@@ -236,10 +232,9 @@ let user_posts = user.posts(&pool).await?;  // Separate query
 let post = Post::find_by_id(&pool, 1).await?.expect("Post exists");
 let author = post.author(&pool).await?.expect("Author exists");
 
-// Eager loading - fetch related data in one query
 let user_with_posts = User::query()
     .filter(User::ID.eq(1))
-    .with_posts()  // JOIN posts in single query
+    .with_posts()
     .fetch_one(&pool)
     .await?;
 
@@ -348,27 +343,6 @@ pub struct Product {
     pub created_at: DateTime<Utc>,
 }
 ```
-
-## 🏗️ Architecture
-
-SQLOrm is built with a modular architecture:
-
-```
-┌─────────────────┐
-│     sqlorm      │  ← Main crate (user-facing API)
-└─────────────────┘
-         │
-    ┌────┴─────┬────────────────┐
-    │          │                │
-┌───▼───┐ ┌────▼────┐ ┌─────────▼──┐
-│ core  │ │ macros  │ │    sqlx    │
-└───────┘ └─────────┘ └────────────┘
-```
-
-- **`sqlorm`**: Main crate with public API
-- **`sqlorm-core`**: Query builder and core traits
-- **`sqlorm-macros`**: Procedural macros for code generation
-- **`sqlx`**: Underlying database driver
 
 ## 🔧 Generated API Reference
 

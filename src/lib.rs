@@ -30,7 +30,10 @@
 //! - [ ] Combined pk's
 //! - [ ] Transactions
 //! - [ ] Cross-relations filters
-//! e.g. User::query().with_posts().filter(Post::read_time.gt_(4))
+//! - Problems:
+//!     When loading relations batch, we need to move all foreign filters from original query to
+//!     batch query. For that we need to rebuild qb and executor
+//! //! e.g. User::query().with_posts().filter(Post::read_time.gt_(4))
 //!
 //!
 //!

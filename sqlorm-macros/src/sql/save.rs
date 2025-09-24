@@ -180,7 +180,7 @@ pub fn save(es: &EntityStruct) -> TokenStream {
             /// let inserted_user = user.insert(&pool).await?;
             /// println!("Inserted user with ID: {}", inserted_user.id);
             /// ```
-            pub async fn insert<'a, E>(mut self, executor: E) -> sqlx::Result<Self>
+            pub async fn insert<'a, E>(mut self, executor: E) -> ::sqlorm::sqlx::Result<Self>
             where
                 E: Send + ::sqlorm::sqlx::Acquire<'a, Database = ::sqlorm::Driver>,
             {

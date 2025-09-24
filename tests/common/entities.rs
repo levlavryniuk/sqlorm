@@ -1,6 +1,5 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use sqlorm::prelude::*;
 use sqlorm::table;
 use uuid::Uuid;
 
