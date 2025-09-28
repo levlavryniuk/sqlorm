@@ -1,3 +1,4 @@
+use sqlorm::StatementExecutor;
 mod common;
 
 use common::create_clean_db;
@@ -12,7 +13,7 @@ async fn test_user_soft_delete_method() {
         .unwrap();
     let id = user.id;
 
-    user.delete(&pool).await.unwrap();
+    user.delete().execute(&pool).await.unwrap();
 
     let db_user: User = User::query()
         .filter(User::ID.eq(id))
@@ -41,7 +42,7 @@ async fn test_jar_hard_delete_method() {
 
     let id = jar.id;
 
-    jar.delete(&pool).await.unwrap();
+    jar.delete().execute(&pool).await.unwrap();
 
     let maybe_jar: Option<Jar> = Jar::query()
         .filter(Jar::ID.eq(id))

@@ -186,7 +186,7 @@ async fn test_delete_user() {
     assert_eq!(users.len(), 1);
 
     // soft delete, since User::deleted_at exists
-    user.delete(&pool).await.unwrap();
+    user.delete().execute(&pool).await.unwrap();
 
     let user = User::query().fetch_one(&pool).await.unwrap();
     assert!(user.deleted_at.is_some());

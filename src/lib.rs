@@ -13,7 +13,7 @@
 //! - **Type-safe (mostly)**: Since 90% of code is geneated at compile time, all types are checked at compile time.
 //! - **Performant**: Sqlorm introduces a minimal overhead over sqlx (thanks to macros).
 //!
-//! To start, look at [`sqlorm::table`](https://docs.rs/sqlorm/latest/sqlorm/attr.table.html)
+//! To get start, look at [`sqlorm::table`](https://docs.rs/sqlorm/latest/sqlorm/attr.table.html)
 //!
 //! ## Todo list:
 //! - [x] Generic, type-safe query builder for each entity.
@@ -26,9 +26,9 @@
 //! - [x] Improved filtering system. ( OR, AND )
 //! - [x] Renaming fields
 //! - [x] Soft delete support
+//! - [x] Transactions
+//! - [ ] Improved update, delete QueryBuilder. (e.g. User::insert())
 //! - [ ] Order-by's
-//! - [ ] Combined pk's
-//! - [ ] Transactions
 //! - [ ] Cross-relations filters
 //! - Problems:
 //!     When loading relations batch, we need to move all foreign filters from original query to

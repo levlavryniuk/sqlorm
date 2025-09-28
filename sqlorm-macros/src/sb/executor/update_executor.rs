@@ -1,4 +1,3 @@
-// TODO - if operation fails, return old state of changed fields.
 use crate::{
     EntityStruct,
     entity::{FieldKind, TimestampKind},
@@ -109,6 +108,7 @@ pub fn implementation(es: &EntityStruct) -> proc_macro2::TokenStream {
                 #pk_col,
                 where_placeholder
             );
+
             let mut query = ::sqlorm::sqlx::query::<::sqlorm::Driver>(&sql);
 
             for field_name in fields_to_update {

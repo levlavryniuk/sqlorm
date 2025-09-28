@@ -2,6 +2,8 @@ use crate::{Condition, TableInfo, selectable::Selectable};
 
 pub struct Update;
 pub struct Delete;
+pub struct Insert;
+
 pub struct SB<T, Stage> {
     /// Base table information and selected columns.
     pub base: TableInfo,
@@ -13,8 +15,9 @@ pub struct SB<T, Stage> {
     pub entity: T,
     _marker: std::marker::PhantomData<Stage>,
 }
-impl<T> SB<T, Update> {
-    pub fn new(base: TableInfo, entity: T) -> SB<T, Update> {
+
+impl<T, Stage> SB<T, Stage> {
+    pub fn new(base: TableInfo, entity: T) -> SB<T, Stage> {
         SB {
             base,
             filters: Vec::new(),
@@ -23,7 +26,8 @@ impl<T> SB<T, Update> {
             _marker: std::marker::PhantomData,
         }
     }
-
+}
+impl<T> SB<T, Update> {
     pub fn columns(mut self, fields: impl Selectable) -> Self {
         self.fields = Some(fields.collect());
         self

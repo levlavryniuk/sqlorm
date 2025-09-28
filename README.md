@@ -119,7 +119,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     updated_user.bio = Some("Senior Rust developer".to_string());
     let updated_user = updated_user.update().columns((User::BIO)).execute(&pool).await?;  // updated_at auto-updated
 
-    user.delete(&pool).await.unwrap()
+    user.delete().execute(&pool).await.unwrap()
 
     Ok(())
 }
@@ -183,11 +183,11 @@ let (id, email) = User::query()
 
 // Select multiple fields
 let user_summaries: Vec<(String, String, Option<String>)> = User::query()
-    .select(vec![
-        User::USERNAME.as_ref(),
-        User::EMAIL.as_ref(),
-        User::BIO.as_ref(),
-    ])
+    .select((
+        User::USERNAME,
+        User::EMAIL,
+        User::BIO,
+    ))
     .fetch_all_as(&pool)
     .await?;
 ```
@@ -308,7 +308,7 @@ pub struct User {
 #[derive(Debug, Clone, Default)]
 pub struct Session {
     #[sql(pk)]
-    pub id: Uuid,  // Auto-generated UUID
+    pub id: Uuid,  // Auto-generated UUID (PostgreSQL only. Sqlite does not like UUIDs)
     // ...
 }
 
@@ -353,6 +353,9 @@ The `#[table]` macro generates extensive APIs for each entity:
 - `save()` - Insert or update (smart detection)
 - `insert()` - Force insert
 - `update()` - Force update
+
+### With `extra-traits` feature:
+
 - `find_by_id()` - Find by primary key
 - `find_by_<unique_field>()` - Find by unique fields
 
@@ -396,11 +399,28 @@ The `#[table]` macro generates extensive APIs for each entity:
 #[sql(pk)]                                    // Primary key
 #[sql(unique)]                                // Unique constraint
 #[sql(timestamp(created_at, chrono::Utc::now()))]  // Auto timestamp
-#[sql(relation(belongs_to -> Parent, relation = "parent", on = id))]     // Belongs to
-#[sql(relation(has_many -> Child, relation = "children", on = parent_id))]  // Has many
+#[sql(relation(belongs_to -> Parent, relation = "parent", on = id))]
+#[sql(relation(has_one -> Sister, relation = "sister", on = id))]
+#[sql(relation(has_many -> Child, relation = "children", on = parent_id))]
 ```
 
 ## 🧪 Testing
+
+### Using [just runner](https://github.com/casey/just):
+
+```bash
+# Test with all drivers
+just test
+
+# Test with specific driver
+
+just test postgres # or sqlite
+
+# Run examples
+just examples
+```
+
+### Using cargo :
 
 ```bash
 # Test with PostgreSQL
