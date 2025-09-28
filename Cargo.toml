@@ -47,7 +47,6 @@ extra-traits = ["sqlorm-macros/extra-traits"]
 uuid = ["sqlorm-core/uuid", "sqlorm-macros/uuid"]
 migrate = ["sqlx/migrate"]
 chrono = ["sqlx/chrono"]
-raw-sqlx = []
 
 
 [package.metadata.docs.rs]
