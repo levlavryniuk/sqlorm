@@ -32,6 +32,7 @@ macro_rules! impl_selectable_for_tuples {
     };
 }
 
+impl_selectable_for_tuples!(A:a);
 impl_selectable_for_tuples!(A:a, B:b);
 impl_selectable_for_tuples!(A:a, B:b, C:c);
 impl_selectable_for_tuples!(A:a, B:b, C:c, D:d);

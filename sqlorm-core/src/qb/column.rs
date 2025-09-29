@@ -1,4 +1,4 @@
-use crate::qb::{bind::BindValue, condition::Condition};
+use crate::qb::{OrderBySpec, additions::Ordering, bind::BindValue, condition::Condition};
 use std::marker::PhantomData;
 
 /// Represents a database column in a type-safe way.
@@ -143,5 +143,18 @@ where
     pub fn not_between(self, start: T, end: T) -> Condition {
         let sql = format!("{} NOT BETWEEN ? AND ?", self.qualified_name());
         Condition::multi(sql, vec![start, end])
+    }
+
+    pub fn desc(self) -> OrderBySpec {
+        OrderBySpec {
+            column: format!("{}.{}", self.table_alias, self.name),
+            order: Ordering::Desc,
+        }
+    }
+    pub fn asc(self) -> OrderBySpec {
+        OrderBySpec {
+            column: format!("{}.{}", self.table_alias, self.name),
+            order: Ordering::Asc,
+        }
     }
 }

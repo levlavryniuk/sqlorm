@@ -1,13 +1,15 @@
+mod additions;
 mod bind;
 mod column;
 pub mod condition;
-mod limit_offset;
 use std::fmt::Debug;
 
 #[cfg(any(feature = "postgres", feature = "sqlite"))]
 use crate::driver::Driver;
 use crate::format_alised_col_name;
-use crate::selectable::Selectable;
+pub use additions::JoinSpec;
+pub use additions::JoinType;
+pub use additions::OrderBySpec;
 pub use bind::BindValue;
 pub use column::Column;
 pub use condition::Condition;
@@ -26,14 +28,19 @@ pub fn with_quotes(s: &str) -> String {
 pub struct QB<T> {
     /// Base table information and selected columns.
     pub base: TableInfo,
+
     /// Eager joins that project columns from related tables.
     pub eager: Vec<JoinSpec>,
     /// Batch joins for has-many relations.
     pub batch: Vec<JoinSpec>,
+
     /// WHERE clause conditions combined with AND.
     pub filters: Vec<Condition>,
+    pub order_by: Vec<OrderBySpec>,
+
     pub limit: Option<i32>,
     pub offset: Option<i32>,
+
     _marker: std::marker::PhantomData<T>,
 }
 #[derive(Clone, Debug)]
@@ -47,31 +54,12 @@ pub struct TableInfo {
     pub columns: Vec<&'static str>,
 }
 
-#[derive(Clone, Debug)]
-/// Join type for related tables.
-pub enum JoinType {
-    Inner,
-    Left,
-}
-
-#[derive(Clone, Debug)]
-/// Specification for joining a related table.
-pub struct JoinSpec {
-    /// The join type.
-    pub join_type: JoinType,
-    /// Relation name.
-    pub relation_name: &'static str,
-    /// The joined table metadata.
-    pub foreign_table: TableInfo,
-    /// Join key mapping as (base_pk, foreign_fk).
-    pub on: (&'static str, &'static str),
-}
-
 impl<T: std::fmt::Debug> QB<T> {
     pub fn new(base: TableInfo) -> QB<T> {
         QB {
             base,
             eager: Vec::new(),
+            order_by: Vec::new(),
             batch: Vec::new(),
             filters: Vec::new(),
             _marker: std::marker::PhantomData,
@@ -80,31 +68,9 @@ impl<T: std::fmt::Debug> QB<T> {
         }
     }
 
-    pub fn join_eager(mut self, spec: JoinSpec) -> Self {
-        self.eager.push(spec);
+    pub fn filter(mut self, cond: Condition) -> Self {
+        self.filters.push(cond);
         self
-    }
-
-    pub fn join_batch(mut self, spec: JoinSpec) -> Self {
-        self.batch.push(spec);
-        self
-    }
-
-    pub fn select<'a, S: Selectable>(mut self, cols: S) -> QB<S::Row> {
-        let cols = cols.collect();
-        if cols.is_empty() {
-            panic!("Cannot select empty column list. At least one column must be specified.");
-        }
-        self.base.columns = cols;
-        QB {
-            base: self.base,
-            eager: self.eager,
-            batch: self.batch,
-            limit: self.limit,
-            offset: self.offset,
-            filters: self.filters,
-            _marker: std::marker::PhantomData,
-        }
     }
 
     fn apply_projections(&self, builder: &mut QueryBuilder<'static, Driver>) {
@@ -137,11 +103,6 @@ impl<T: std::fmt::Debug> QB<T> {
         ));
 
         builder.push(" ");
-    }
-
-    pub fn filter(mut self, cond: Condition) -> Self {
-        self.filters.push(cond);
-        self
     }
 
     fn apply_joins(&self, builder: &mut QueryBuilder<'static, Driver>) {
@@ -212,6 +173,21 @@ impl<T: std::fmt::Debug> QB<T> {
         }
     }
 
+    fn apply_order_by(&self, builder: &mut QueryBuilder<'static, Driver>) {
+        if self.order_by.is_empty() {
+            return;
+        }
+
+        builder.push(" ORDER BY ");
+
+        for (i, spec) in self.order_by.iter().enumerate() {
+            if i > 0 {
+                builder.push(", ");
+            }
+            builder.push(format!("{} {}", spec.column, spec.order));
+        }
+    }
+
     pub fn build_query(&self) -> QueryBuilder<'static, Driver> {
         let mut builder = QueryBuilder::new("SELECT ");
 
@@ -219,6 +195,7 @@ impl<T: std::fmt::Debug> QB<T> {
         self.apply_from_clause(&mut builder);
         self.apply_joins(&mut builder);
         self.apply_filters(&mut builder);
+        self.apply_order_by(&mut builder);
         self.apply_limit(&mut builder);
         self.apply_offset(&mut builder);
 

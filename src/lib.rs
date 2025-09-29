@@ -35,6 +35,9 @@
 //!     batch query. For that we need to rebuild qb and executor
 //! //! e.g. User::query().with_posts().filter(Post::read_time.gt_(4))
 //!
+//! Optional todos:
+//! -[ ] Compile-time entity-table type-check
+//!
 //!
 //!
 //! ## Usage
