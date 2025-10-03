@@ -12,19 +12,18 @@
 [![Documentation](https://docs.rs/sqlorm/badge.svg)](https://docs.rs/sqlorm)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/levlavryniuk/sqlorm/blob/main/LICENSE)
 
-Sqlorm is a modern ORM built on top of [sqlx](https://github.com/launchbadge/sqlx) that provides compile-time safety, powerful macro-generated APIs, and an intuitive query builder. It's designed for developers who want the performance of sqlx with the convenience of an ORM.
+Sqlorm is a modern mini-ORM built on top of [sqlx](https://github.com/launchbadge/sqlx) that provides compile-time safety, powerful macro-generated APIs, and an intuitive query builder. It's designed for developers who want the performance of sqlx with the convenience of an ORM.
 
-## ✨ Key Features
+## Key Features
 
-- ** Type-Safe **: All queries are checked at compile-time
-- ** Zero-Cost Abstraction**: Minimal overhead over raw sqlx
-- ** Macro-Powered**: Rich APIs generated from simple struct definitions
-- ** Relationships**: Support for `belongs_to`, `has_many` and `has_many` relations with eager/lazy loading
-- ** Automatic Timestamps**: Built-in `created_at`/`updated_at` handling
-- ** Multi-Database**: PostgreSQL and SQLite support
-- ** Powerful Querying**: Fluent query builder with comprehensive filtering
+- **Type-Safe**: All queries are checked at compile-time
+- **Zero-Cost Abstraction**: Minimal overhead over raw sqlx
+- **Macro-Powered**: Rich APIs generated from simple struct definitions
+- **Relationships**: Support for `belongs_to`, `has_many` and `has_many` relations with eager/lazy loading
+- **Multi-Database**: PostgreSQL and SQLite support
+- **Powerful Querying**: Fluent query builder with comprehensive filtering
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Installation
 
@@ -79,7 +78,7 @@ pub struct User {
 }
 ```
 
-## 📖 Usage Examples
+## Usage Examples
 
 ### Basic CRUD Operations
 
@@ -127,7 +126,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ### Advanced Querying
 
-SQLOrm provides a powerful, type-safe query builder:
+Sqlorm provides a powerful, type-safe query builder:
 
 ```rust
 // Simple filtering
@@ -384,7 +383,7 @@ The `#[table]` macro generates extensive APIs for each entity:
 - `<relation_name>()` - Lazy load related entities
 - `with_<relation_name>()` - Eager load in query builder
 
-## 📋 Attribute Reference
+## Attribute Reference
 
 ### Table Attributes
 
@@ -404,7 +403,7 @@ The `#[table]` macro generates extensive APIs for each entity:
 #[sql(relation(has_many -> Child, relation = "children", on = parent_id))]
 ```
 
-## 🧪 Testing
+## Testing
 
 ### Using [just runner](https://github.com/casey/just):
 
@@ -435,7 +434,7 @@ cargo run --example crud --features "postgres uuid chrono"
 cargo run --example relations --features "postgres uuid chrono"
 ```
 
-## 📚 More Examples
+## More Examples
 
 Check the [`examples/`](./examples) directory for complete working examples:
 
@@ -443,7 +442,7 @@ Check the [`examples/`](./examples) directory for complete working examples:
 - **[`crud`](./examples/crud/main.rs)**: Comprehensive CRUD with multiple entities
 - **[`relations`](./examples/relations/main.rs)**: Working with entity relationships
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request. Make sure to:
 
@@ -452,10 +451,10 @@ Contributions are welcome! Please feel free to submit a Pull Request. Make sure 
 3. Add tests for new features
 4. Update documentation as needed
 
-## 📝 License
+## License
 
 This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 Built on the excellent [sqlx](https://github.com/launchbadge/sqlx) crate. Inspired by Rails Active Record and Laravel Eloquent.
