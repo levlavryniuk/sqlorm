@@ -12,7 +12,7 @@
 [![Documentation](https://docs.rs/sqlorm/badge.svg)](https://docs.rs/sqlorm)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/levlavryniuk/sqlorm/blob/main/LICENSE)
 
-Sqlorm is a modern ORM built on top of [sqlx](https://github.com/launchbadge/sqlx) that provides compile-time safety, powerful macro-generated APIs, and an intuitive query builder. It's designed for developers who want the performance of sqlx with the convenience of an ORM.
+Sqlorm is a modern mini-ORM built on top of [sqlx](https://github.com/launchbadge/sqlx) that provides compile-time safety, powerful macro-generated APIs, and an intuitive query builder. It's designed for developers who want the performance of sqlx with the convenience of an ORM.
 
 ## Key Features
 
@@ -20,7 +20,6 @@ Sqlorm is a modern ORM built on top of [sqlx](https://github.com/launchbadge/sql
 - **Zero-Cost Abstraction**: Minimal overhead over raw sqlx
 - **Macro-Powered**: Rich APIs generated from simple struct definitions
 - **Relationships**: Support for `belongs_to`, `has_many` and `has_many` relations with eager/lazy loading
-- **Automatic Timestamps**: Built-in `created_at`/`updated_at` handling
 - **Multi-Database**: PostgreSQL and SQLite support
 - **Powerful Querying**: Fluent query builder with comprehensive filtering
 
