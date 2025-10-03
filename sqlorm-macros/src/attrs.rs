@@ -135,10 +135,10 @@ pub fn parse_relation(input: ParseStream, self_ident: Ident) -> Result<Relation>
 
     input.parse::<Token![,]>()?;
     let relation_ident: Ident = input.parse()?;
-    if relation_ident != "relation" {
+    if relation_ident != "name" {
         return Err(syn::Error::new_spanned(
             relation_ident,
-            "expected `relation = \"...\"`",
+            "expected `name = \"...\"`",
         ));
     }
     input.parse::<Token![=]>()?;

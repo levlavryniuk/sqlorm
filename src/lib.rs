@@ -27,8 +27,8 @@
 //! - [x] Renaming fields
 //! - [x] Soft delete support
 //! - [x] Transactions
+//! - [x] Order-by clauses
 //! - [ ] Improved update, delete QueryBuilder. (e.g. User::insert())
-//! - [ ] Order-by's
 //! - [ ] Cross-relations filters
 //! - Problems:
 //!     When loading relations batch, we need to move all foreign filters from original query to
@@ -36,7 +36,7 @@
 //! //! e.g. User::query().with_posts().filter(Post::read_time.gt_(4))
 //!
 //! Optional todos:
-//! -[ ] Compile-time entity-table type-check
+//! -[ ] Compile-time entity<->schema type check
 //!
 //!
 //!

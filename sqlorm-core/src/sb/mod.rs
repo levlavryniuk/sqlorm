@@ -2,7 +2,6 @@ use crate::{Condition, TableInfo, selectable::Selectable};
 
 pub struct Update;
 pub struct Delete;
-pub struct Insert;
 
 pub struct SB<T, Stage> {
     /// Base table information and selected columns.

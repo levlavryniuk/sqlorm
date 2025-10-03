@@ -7,8 +7,8 @@ use uuid::Uuid;
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct User {
     #[sql(pk)]
-    #[sql(relation(has_many -> Jar, relation = "jars", on = owner_id))]
-    #[sql(relation(has_many -> Donation, relation = "payed_donations", on = payer_id))]
+    #[sql(relation(has_many -> Jar, name = "jars", on = owner_id))]
+    #[sql(relation(has_many -> Donation, name = "payed_donations", on = payer_id))]
     pub id: i64,
     #[sql(unique)]
     pub email: String,
@@ -35,7 +35,7 @@ pub struct User {
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Jar {
     #[sql(pk)]
-    #[sql(relation(has_many -> Donation, relation = "donations", on = jar_id))]
+    #[sql(relation(has_many -> Donation, name = "donations", on = jar_id))]
     pub id: i64,
     pub title: String,
     pub description: Option<String>,
@@ -46,7 +46,7 @@ pub struct Jar {
     pub alias: String,
     pub hide_earnings: bool,
     pub goal: Option<f64>,
-    #[sql(relation(belongs_to -> User, relation = "owner", on = id))]
+    #[sql(relation(belongs_to -> User, name = "owner", on = id))]
     pub owner_id: i64,
     #[sql(timestamp(created_at, chrono::Utc::now()))]
     pub created_at: DateTime<Utc>,
@@ -61,9 +61,9 @@ pub struct Donation {
     pub id: Uuid,
     pub amount: f64,
     pub tip: f64,
-    #[sql(relation(belongs_to -> Jar, relation = "jar", on = id))]
+    #[sql(relation(belongs_to -> Jar, name = "jar", on = id))]
     pub jar_id: i64,
-    #[sql(relation(belongs_to -> User, relation = "payer", on = id))]
+    #[sql(relation(belongs_to -> User, name = "payer", on = id))]
     pub payer_id: i64,
     pub is_payed: bool,
     pub transaction_id: Option<String>,

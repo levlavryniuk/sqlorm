@@ -15,7 +15,7 @@ use uuid::Uuid;
 #[derive(Debug, Clone, Default)]
 pub struct User {
     #[sql(pk)]
-    #[sql(relation(has_many -> Post, relation = "posts", on = user_id))]
+    #[sql(relation(has_many -> Post, name = "posts", on = user_id))]
     pub id: i64,
     #[sql(unique)]
     pub username: String,
@@ -35,7 +35,7 @@ impl User {
 pub struct Post {
     #[sql(pk)]
     pub id: i64,
-    #[sql(relation(belongs_to -> User, relation = "user", on = id))]
+    #[sql(relation(belongs_to -> User, name = "user", on = id))]
     pub user_id: i64,
     pub title: String,
 }

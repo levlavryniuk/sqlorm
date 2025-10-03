@@ -36,7 +36,7 @@ pub struct Jar {
     pub title: String,
     pub description: Option<String>,
     pub goal: Option<f64>,
-    #[sql(relation(belongs_to -> User, relation = "owner", on = id))]
+    #[sql(relation(belongs_to -> User, name = "owner", on = id))]
     pub owner_id: i64,
     #[sql(timestamp(created_at, chrono::Utc::now()))]
     pub created_at: DateTime<Utc>,
@@ -51,9 +51,9 @@ pub struct Donation {
     pub id: Uuid,
     pub amount: f64,
     pub message: Option<String>,
-    #[sql(relation(belongs_to -> Jar, relation = "jar", on = id))]
+    #[sql(relation(belongs_to -> Jar, name = "jar", on = id))]
     pub jar_id: i64,
-    #[sql(relation(belongs_to -> User, relation = "donor", on = id))]
+    #[sql(relation(belongs_to -> User, name = "donor", on = id))]
     pub donor_id: i64,
     #[sql(timestamp(created_at, chrono::Utc::now()))]
     pub created_at: DateTime<Utc>,
