@@ -30,6 +30,7 @@
 //! - [x] Order-by clauses
 //! - [ ] Improved update, delete QueryBuilder. (e.g. User::insert())
 //! - [ ] Cross-relations filters
+//! - [ ] Add support for custom, user-defined selectable types
 //! - Problems:
 //!     When loading relations batch, we need to move all foreign filters from original query to
 //!     batch query. For that we need to rebuild qb and executor

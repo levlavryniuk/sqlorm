@@ -31,7 +31,10 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-sqlorm = { version = "0.4", features = ["postgres", "uuid" ] }
+sqlorm = { version = "0.8", features = ["postgres", "uuid" ] }
+# important to use the same version of sqlx, to avoid compile time increase
+sqlx={version = "=0.8.*"}
+
 tokio = { version = "1.0", features = ["full"] }
 chrono = { version = "0.4", features = ["serde"] }
 uuid = { version = "1.0", features = ["v4", "serde"] }
