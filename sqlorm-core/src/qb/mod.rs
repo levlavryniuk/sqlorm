@@ -23,7 +23,6 @@ pub fn with_quotes(s: &str) -> String {
     format!("\"{}\"", s)
 }
 
-#[derive(Debug)]
 /// Query builder for composing SELECT statements with optional joins and filters.
 pub struct QB<T> {
     /// Base table information and selected columns.
@@ -54,7 +53,7 @@ pub struct TableInfo {
     pub columns: Vec<&'static str>,
 }
 
-impl<T: std::fmt::Debug> QB<T> {
+impl<T> QB<T> {
     pub fn new(base: TableInfo) -> QB<T> {
         QB {
             base,
